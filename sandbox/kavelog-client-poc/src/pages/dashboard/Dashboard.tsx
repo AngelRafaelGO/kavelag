@@ -1,20 +1,25 @@
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Button, TextField, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 
 const Dashboard = () => {
   const [socket, setSocket] = useState<WebSocket | null>(null);
+  const [serverMessage, setServerMessage] = useState<any>("");
 
   const handleTestServer = () => {
     if (socket) {
-      socket.send("Test message from client");
+      socket.send(serverMessage);
       console.log("Sent message to server");
     } else {
       console.log("WebSocket is not connected");
     }
   };
 
+  const handleServerMessage = (message: String) => {
+    setServerMessage(message);
+  };
+
   useEffect(() => {
-    const ws = new WebSocket("ws://127.0.0.1:9002/ws");
+    const ws = new WebSocket("ws://127.0.0.1:8080/ws");
 
     // Connection opened
     ws.addEventListener("open", (event) => {
@@ -53,6 +58,9 @@ const Dashboard = () => {
           Data will be displayed here
         </Typography>
         <Box>
+          <TextField
+            onChange={(event) => handleServerMessage(event.target.value)}
+          />
           <Button onClick={() => handleTestServer()}>TEST THE SERVER</Button>
         </Box>
       </Box>

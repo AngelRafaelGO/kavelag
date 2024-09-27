@@ -20,7 +20,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
+
 fun Application.configureSockets() {
+    val client = HttpClient(CIO) {
+        expectSuccess = true
+    }
+
     install(WebSockets) {
         pingPeriod = Duration.ofSeconds(15)
         timeout = Duration.ofSeconds(15)
@@ -32,7 +37,11 @@ fun Application.configureSockets() {
             for (frame in incoming) {
                 if (frame is Frame.Text) {
                     val text = frame.readText()
-                    outgoing.send(Frame.Text("YOU SAID: $text"))
+
+                    val response: HttpResponse = client.get("http://localhost:8081")
+                    println(response.status)
+
+                    outgoing.send(Frame.Text("YOU SAID: $text - other server response : ${response.status}"))
                     if (text.equals("bye", ignoreCase = true)) {
                         close(CloseReason(CloseReason.Codes.NORMAL, "Client said BYE"))
                     }
@@ -51,9 +60,9 @@ object EchoApp {
     val DefaultPort = 9002
 
     object Server {
-        val client = HttpClient(CIO) {
-            expectSuccess = true
-        }
+//        val client = HttpClient(CIO) {
+//            expectSuccess = true
+//        }
 
         @JvmStatic
         fun main(args: Array<String>) {
@@ -70,8 +79,8 @@ object EchoApp {
                             while (true) {
                                 val line = read.readUTF8Line()
                                 write.writeStringUtf8("$line\n")
-                                val response: HttpResponse = client.get("http://localhost:8080")
-                                println(response.status)
+//                                val response: HttpResponse = client.get("http://localhost:8080")
+//                                println(response.status)
                             }
                         } catch (e: Throwable) {
                             socket.close()
