@@ -82,8 +82,6 @@ object EchoApp {
                         var i = 0
                         try {
                             while (true) {
-//                                i++
-//                                println(i)
                                 val someWords = receiveChannel.readUTF8Line()
                                 when (someWords) {
                                     null -> {
