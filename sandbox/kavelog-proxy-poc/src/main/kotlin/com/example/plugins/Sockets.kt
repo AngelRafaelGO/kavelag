@@ -56,7 +56,7 @@ fun Application.configureSockets() {
  */
 object EchoApp {
     val selectorManager = ActorSelectorManager(Dispatchers.IO)
-    val DefaultPort = 9002
+    val DefaultPort = 9012
 
     object Server {
 //        val client = HttpClient(CIO) {
@@ -94,7 +94,7 @@ object EchoApp {
         @JvmStatic
         fun main(args: Array<String>) {
             runBlocking {
-                val socket = aSocket(selectorManager).tcp().connect("127.0.0.1", port = DefaultPort)
+                val socket = aSocket(selectorManager).tcp().connect("127.0.0.1", port = 9002)
                 val read = socket.openReadChannel()
                 val write = socket.openWriteChannel(autoFlush = true)
 
