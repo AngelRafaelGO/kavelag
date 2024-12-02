@@ -6,6 +6,7 @@ import io.ktor.utils.io.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import org.kavelag.project.parser.parserDispatcher
 
 object SocketProxyReceiver {
     // TODO: move this to a shared configuration
@@ -30,6 +31,7 @@ object SocketProxyReceiver {
                                 val line = read.readUTF8Line() ?: break
                                 println("Received message: $line")
                                 write.writeStringUtf8("$line\n")
+                                parserDispatcher(line)
                             }
                         } catch (e: Throwable) {
                             println("Error handling client: ${e.message}")
