@@ -9,8 +9,10 @@ fun parserDispatcher(httpRequest: String): String {
 
     if (inputToArray[0] == "GET") {
         println("Its a GET !")
+        // TODO: call get parser
     } else if (inputToArray[0] == "POST") {
         println("Its a POST !")
+        // TODO: call post parser
     }
 
     return httpRequest
