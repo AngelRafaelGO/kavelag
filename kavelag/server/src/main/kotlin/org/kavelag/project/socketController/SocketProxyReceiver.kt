@@ -6,10 +6,12 @@ import io.ktor.utils.io.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.kavelag.project.parser.parserDispatcher
 
 object SocketProxyReceiver {
     // TODO: move this to a shared configuration
+    // TODO: handle exceptions
     private const val kavelagProxyPort = 9002
     private val selectorManager = ActorSelectorManager(Dispatchers.IO)
 
@@ -21,23 +23,17 @@ object SocketProxyReceiver {
             coroutineScope {
                 while (true) {
                     val socket = serverSocket.accept()
-                    println("Accepted connection: $socket")
-
                     launch(Dispatchers.IO) {
-                        val read = socket.openReadChannel()
-                        val write = socket.openWriteChannel(autoFlush = true)
                         try {
-                            while (true) {
-                                val line = read.readUTF8Line() ?: break
-                                println("Received message: $line")
-                                write.writeStringUtf8("$line\n")
-                                parserDispatcher(line)
-                            }
+                            parserDispatcher(socket.openReadChannel().readRemaining().readText())
                         } catch (e: Throwable) {
                             println("Error handling client: ${e.message}")
                         } finally {
-                            println("Closing client socket: $socket")
-                            socket.close()
+                            try {
+                                socket.close()
+                            } catch (closeException: Throwable) {
+                                println("Error closing socket: ${closeException.message}")
+                            }
                         }
                     }
                 }
@@ -46,7 +42,9 @@ object SocketProxyReceiver {
             println("Server error: ${e.message}")
         } finally {
             println("Shutting down server socket and selector manager")
-            serverSocket.close()
+            withContext(Dispatchers.IO) {
+                serverSocket.close()
+            }
             selectorManager.close()
         }
     }
