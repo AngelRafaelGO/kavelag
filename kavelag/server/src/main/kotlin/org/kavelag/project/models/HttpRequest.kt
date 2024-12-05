@@ -1,3 +1,9 @@
 package org.kavelag.project.models
 
-class HttpRequest(method: String, headers: List<String>, body: String)
+class HttpRequest(
+    val method: String,
+    val requestedResource: String,
+    val httpProtocolVersion: String,
+    val headers: MutableMap<String, String>,
+    val body: String? = null
+)

@@ -1,26 +1,18 @@
 package org.kavelag.project.parser
 
-fun parserDispatcher(httpRequest: String): String {
-    println("String to parse: \n$httpRequest")
-    val requestMethod = extractMethodFromRequest(httpRequest);
-    val requestHeaders = extractHeadersFromRequest(httpRequest);
-    println(requestMethod)
-//    val request = HttpRequest();
+import org.kavelag.project.models.HttpRequest
 
+fun parserDispatcher(httpRequest: String): HttpRequest {
+    val requestMethod = extractMethod(httpRequest)
+    val requestRequestedResourceAddress = extractRequestedResourceUrl(httpRequest)
+    val requestHTTPProtocolVersion = extractHTTPProtocolVersion(httpRequest)
+    val requestHeaders = extractHeaders(httpRequest)
 
-    return httpRequest
-}
-
-fun extractMethodFromRequest(httpRequest: String): String? {
-    if (RestRegex.getRegex.find(httpRequest)?.value == "GET") {
-        return "GET"
-    } else if (RestRegex.postRegex.find(httpRequest)?.value == "POST") {
-        return "POST"
+    if (requestMethod == "POST") {
+        // TODO: we parse the body
     }
-    return null
-}
 
-fun extractHeadersFromRequest(httpRequest: String): List<String>? {
-    val currentHeader = RestRegex.headerRegex.find(httpRequest)
-    return null
+    val parsedRequest =
+        HttpRequest(requestMethod!!, requestRequestedResourceAddress!!, requestHTTPProtocolVersion!!, requestHeaders)
+    return parsedRequest
 }
