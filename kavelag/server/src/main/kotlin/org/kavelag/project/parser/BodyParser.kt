@@ -6,7 +6,7 @@ fun bodyParser(httpRequest: String): String? {
 
     val result = bodyRegex.find(httpRequest)
     if (result != null) {
-        return result?.groups?.get(1)?.value
+        return result.groups[1]?.value
     }
     return null
 }
