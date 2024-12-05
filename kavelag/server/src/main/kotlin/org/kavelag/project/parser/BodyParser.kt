@@ -2,7 +2,7 @@ package org.kavelag.project.parser
 
 fun bodyParser(httpRequest: String): String? {
 
-    val bodyRegex = Regex("(?s)\n\n(.*)")
+    val bodyRegex = RestRegex.bodyRegex
 
     val result = bodyRegex.find(httpRequest)
     if (result != null) {

@@ -19,11 +19,17 @@ class ParamsParser {
             "foo": "bar"
         }
         """.trimIndent()
+
+        val expected = mapOf(
+            "q" to "kotlin",
+            "lang" to "fr"
+        )
+
         //When
         val actual = paramsParser(request)
 
         //Then
-        Assert.assertEquals("q=kotlin&lang=fr", actual)
+        Assert.assertEquals(expected, actual)
     }
 
     @Test
@@ -41,11 +47,14 @@ class ParamsParser {
             "foo": "bar"
         }
         """.trimIndent()
+
+        val expected = emptyMap<String, String>()
+
         //When
         val actual = paramsParser(request)
 
         //Then
-        Assert.assertEquals("", actual)
+        Assert.assertEquals(expected, actual)
     }
 
 
