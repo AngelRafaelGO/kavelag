@@ -1,18 +1,18 @@
 package org.kavelag.project.parser
 
 fun extractMethod(httpRequest: String): String? {
-    val match = extractLinesFromRequest(httpRequest)?.let { RestRegex.methodRegex.find(it) }
-    return match?.value
+    val httpMethod = extractLinesFromRequest(httpRequest)?.let { RestRegex.methodRegex.find(it) }
+    return httpMethod?.value
 }
 
 fun extractHTTPProtocolVersion(httpRequest: String): String? {
-    val match = extractLinesFromRequest(httpRequest)?.let { RestRegex.httpProtocolVersionRegex.find(it) }
-    return match?.groupValues?.get(0)
+    val httpProtocolVersion = extractLinesFromRequest(httpRequest)?.let { RestRegex.httpProtocolVersionRegex.find(it) }
+    return httpProtocolVersion?.groupValues?.get(0)
 }
 
 fun extractRequestedResourceUrl(httpRequest: String): String? {
-    val match = extractLinesFromRequest(httpRequest)?.let { RestRegex.requestedResourceRegex.find(it) }
-    return match?.groupValues?.get(1)
+    val requestedResourceUrl = extractLinesFromRequest(httpRequest)?.let { RestRegex.requestedResourceRegex.find(it) }
+    return requestedResourceUrl?.groupValues?.get(1)
 }
 
 fun extractHeaders(httpRequest: String): MutableMap<String, String> {
@@ -28,6 +28,10 @@ fun extractHeaders(httpRequest: String): MutableMap<String, String> {
     return headers
 }
 
+/*
+Since HTTP is a structured protocol, this function can return the line that contains the element
+needed by the calling function
+ */
 fun extractLinesFromRequest(httpRequest: String): String? {
     val requestLines = httpRequest.split("\r\n")
     val requestLine = requestLines.getOrNull(0) ?: return null
