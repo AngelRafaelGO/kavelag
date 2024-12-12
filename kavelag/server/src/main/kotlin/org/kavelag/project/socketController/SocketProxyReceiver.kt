@@ -7,7 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.kavelag.project.parser.parserDispatcher
+import org.kavelag.project.parser.parseIncomingHttpRequest
 
 object SocketProxyReceiver {
     // TODO: move this to a shared configuration
@@ -25,7 +25,7 @@ object SocketProxyReceiver {
                     val socket = serverSocket.accept()
                     launch(Dispatchers.IO) {
                         try {
-                            parserDispatcher(socket.openReadChannel().readRemaining().readText())
+                            parseIncomingHttpRequest(socket.openReadChannel().readRemaining().readText())
                         } catch (e: Throwable) {
                             println("Error handling client: ${e.message}")
                         } finally {
