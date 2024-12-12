@@ -61,6 +61,7 @@ class RestExtractorsTest() {
             "Accept" to "application/json",
             "User-Agent" to "CustomClient/1.0"
         )
+        
         // ACT
         val actual = extractHeaders(HTTP_GET_REQUEST)
 
