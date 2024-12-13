@@ -34,87 +34,10 @@ fun main() = application {
 
     Window(
         onCloseRequest = ::exitApplication,
-        undecorated = true,
+//        undecorated = true,
         title = "kavelag",
         icon = painterResource(Res.drawable.logo)
     ) {
-        Row(
-            modifier = Modifier.background(color = Color(75, 75, 75))
-                .fillMaxWidth()
-                .height(30.dp)
-                .padding(start = 20.dp, end = 10.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            WindowDraggableArea(
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(text = "Undecorated window", color = Color.White)
-            }
-            Row {
-                Button(
-                    onClick = {
-                        val current = AppManager.focusedWindow
-                        if (current != null) {
-                            current.window.setExtendedState(JFrame.ICONIFIED)
-                        }
-                    }
-                )
-                Spacer(modifier = Modifier.width(5.dp))
-                Button(
-                    onClick = {
-                        val current = AppManager.focusedWindow
-                        if (current != null) {
-                            if (current.window.extendedState == JFrame.MAXIMIZED_BOTH) {
-                                current.window.setExtendedState(JFrame.NORMAL)
-                            } else {
-                                current.window.setExtendedState(JFrame.MAXIMIZED_BOTH)
-                            }
-                        }
-                    }
-                )
-                Spacer(modifier = Modifier.width(5.dp))
-                Button(
-                    onClick = {
-                        AppManager.focusedWindow?.close()
-                    }
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun Button(
-    text: String = "",
-    onClick: () -> Unit = {},
-    color: Color = Color(210, 210, 210),
-    size: Int = 16
-) {
-    val buttonHover = remember { mutableStateOf(false) }
-    Surface(
-        color = if (buttonHover.value)
-            Color(color.red / 1.3f, color.green / 1.3f, color.blue / 1.3f)
-        else
-            color,
-        shape = RoundedCornerShape((size / 2).dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .clickable(onClick = onClick)
-                .size(size.dp, size.dp)
-                .pointerMoveFilter(
-                    onEnter = {
-                        buttonHover.value = true
-                        false
-                    },
-                    onExit = {
-                        buttonHover.value = false
-                        false
-                    },
-                    onMove = { false }
-                )
-        ) {
-            Text(text = text)
-        }
+        App()
     }
 }

@@ -305,7 +305,29 @@ fun App() {
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(bottom = 16.dp, top = 10.dp) // Ajoute un espace en dessous
                     )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically // Centre verticalement les éléments du Row
+                    ) {
+                        Text(
+                            text = "Port",
+                            fontSize = 15.sp,
+                            modifier = Modifier.padding(end = 10.dp, bottom = 2.dp) // Espace à droite de "Url"
+                        )
 
+                        CustomTextField(
+                            leadingIcon = null,
+                            trailingIcon = null,
+                            modifier = Modifier
+                                .background(
+                                    MaterialTheme.colors.surface,
+                                )
+                                .border(0.5.dp, Color.Gray, shape = RoundedCornerShape(3.dp))
+                                .fillMaxWidth(0.3f) // Largeur fixe du champ texte
+                                .height(22.dp), // Hauteur fixe pour un bon rendu
+                            fontSize = 14.sp,
+                            placeholderText = "..."
+                        )
+                    }
                     // Ligne contenant "Url" et le champ texte
                     Box(
                         modifier = Modifier
@@ -331,11 +353,12 @@ fun App() {
                                     .border(0.5.dp, Color.Gray, shape = RoundedCornerShape(3.dp))
                                     .fillMaxWidth(0.8f) // Largeur fixe du champ texte
                                     .height(22.dp), // Hauteur fixe pour un bon rendu
-                                fontSize = 10.sp,
+                                fontSize = 14.sp,
                                 placeholderText = "..."
                             )
                         }
                     }
+
                     Divider(
                         modifier = Modifier
                             .padding(vertical = 25.dp) // Espacement au-dessus et en dessous du Divider
