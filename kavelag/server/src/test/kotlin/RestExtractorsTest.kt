@@ -5,15 +5,21 @@ import kotlin.test.assertEquals
 class RestExtractorsTest() {
     companion object {
         const val HTTP_GET_REQUEST =
+            "GET /endpoint/child-endpoint/child-endpoint/resource HTTP/1.1\r\nHost: example.com\r\nAuthorization: Bearer abcdef123456\r\nAccept: application/json\r\nUser-Agent: CustomClient/1.0\r\n\r\n"
+        const val HTTP_GET_REQUEST_WITH_QUERY_PARAMS =
             "GET /endpoint/child-endpoint/child-endpoint/resource?key1=value1&key2=value2&key3=value3&key4=value4&key5=value5 HTTP/1.1\r\nHost: example.com\r\nAuthorization: Bearer abcdef123456\r\nAccept: application/json\r\nUser-Agent: CustomClient/1.0\r\n\r\n"
         const val HTTP_POST_REQUEST =
             "POST /endpoint HTTP/1.1\r\nHost: example.com\r\nContent-Type: application/json\r\nAuthorization: Bearer abcdef123456\r\nAccept: application/json\r\nUser-Agent: CustomClient/1.0\r\nContent-Length: 87\r\n\r\n{\"key1\":\"value1\",\"key2\":\"value2\",\"key3\":\"value3\",\"key4\":\"value4\",\"key5\":\"value5\"}\n"
         const val HTTP_START_LINE =
             "GET /endpoint/child-endpoint/child-endpoint/resource?key1=value1&key2=value2&key3=value3&key4=value4&key5=value5 HTTP/1.1"
+        const val HTTP_REQUESTED_RESOURCE_WITH_QUERY_PARAMS =
+            "/endpoint/child-endpoint/child-endpoint/resource?key1=value1&key2=value2&key3=value3&key4=value4&key5=value5"
+        const val HTTP_REQUESTED_RESOURCE_WITHOUT_QUERY_PARAMS =
+            "/endpoint/child-endpoint/child-endpoint/resource"
         const val HTTP_HEADERS = "Host: example.com\n" +
                 "Authorization: Bearer abcdef123456\n" +
                 "Accept: application/json\n" +
-                "User-Agent: CustomClient/1."
+                "User-Agent: CustomClient/1.0"
     }
 
     @Test
@@ -22,7 +28,7 @@ class RestExtractorsTest() {
         val actual = extractMethod(HTTP_GET_REQUEST)
 
         // ASSERT
-        assertEquals(actual, "GET")
+        assertEquals("GET", actual)
     }
 
     @Test
@@ -31,7 +37,7 @@ class RestExtractorsTest() {
         val actual = extractMethod(HTTP_POST_REQUEST)
 
         // ASSERT
-        assertEquals(actual, "POST")
+        assertEquals("POST", actual)
     }
 
     @Test
@@ -40,16 +46,25 @@ class RestExtractorsTest() {
         val actual = extractHTTPProtocolVersion(HTTP_GET_REQUEST)
 
         // ASSERT
-        assertEquals(actual, "HTTP/1.1")
+        assertEquals("HTTP/1.1", actual)
     }
 
     @Test
-    fun shouldExtractRequestedResourcePathFromRequest() {
+    fun shouldExtractRequestedResourcePathFromRequestWithQueryParams() {
+        // ACT
+        val actual = extractRequestedResourceUrl(HTTP_GET_REQUEST_WITH_QUERY_PARAMS)
+
+        // ASSERT
+        assertEquals(HTTP_REQUESTED_RESOURCE_WITH_QUERY_PARAMS, actual)
+    }
+
+    @Test
+    fun shouldExtractRequestedResourcePathFromRequestWithoutQueryParams() {
         // ACT
         val actual = extractRequestedResourceUrl(HTTP_GET_REQUEST)
 
         // ASSERT
-        assertEquals(actual, "/endpoint/child-endpoint/child-endpoint/resource")
+        assertEquals(HTTP_REQUESTED_RESOURCE_WITHOUT_QUERY_PARAMS, actual)
     }
 
     @Test
@@ -66,43 +81,34 @@ class RestExtractorsTest() {
         val actual = extractHeaders(HTTP_GET_REQUEST)
 
         // ASSERT
-        assertEquals(actual, expected)
+        assertEquals(expected, actual)
     }
 
     @Test
     fun shouldRetrieveCorrectLineFromRequestWhenCallingForMethod() {
         // ACT
-        val actual = extractLinesFromRequest(HTTP_GET_REQUEST)
+        val actual = extractLinesFromRequest(HTTP_GET_REQUEST_WITH_QUERY_PARAMS)
 
         // ASSERT
-        assertEquals(actual, HTTP_START_LINE)
+        assertEquals(HTTP_START_LINE, actual)
     }
 
     @Test
     fun shouldRetrieveCorrectLineFromRequestWhenCallingForHTTPProtocolVersion() {
         // ACT
-        val actual = extractLinesFromRequest(HTTP_GET_REQUEST)
+        val actual = extractLinesFromRequest(HTTP_GET_REQUEST_WITH_QUERY_PARAMS)
 
         // ASSERT
-        assertEquals(actual, HTTP_START_LINE)
+        assertEquals(HTTP_START_LINE, actual)
 
     }
 
     @Test
     fun shouldRetrieveCorrectLineFromRequestWhenCallingForRequestedResource() {
         // ACT
-        val actual = extractLinesFromRequest(HTTP_GET_REQUEST)
+        val actual = extractLinesFromRequest(HTTP_GET_REQUEST_WITH_QUERY_PARAMS)
 
         // ASSERT
-        assertEquals(actual, HTTP_START_LINE)
-    }
-
-    @Test
-    fun shouldRetrieveCorrectLineFromRequestWhenCallingForHeaders() {
-        // ACT
-        val actual = extractLinesFromRequest(HTTP_GET_REQUEST)
-
-        // ASSERT
-        assertEquals(actual, HTTP_HEADERS)
+        assertEquals(HTTP_START_LINE, actual)
     }
 }
