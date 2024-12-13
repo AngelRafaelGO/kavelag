@@ -8,10 +8,10 @@ plugins {
 
 kotlin {
     jvm("desktop")
-    
+
     sourceSets {
         val desktopMain by getting
-        
+
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)
@@ -22,6 +22,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtime.compose)
             implementation(projects.shared)
+
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
@@ -39,6 +40,15 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "org.kavelag.project"
             packageVersion = "1.0.0"
+            macOS {
+                iconFile.set(project.file("logo.png"))
+            }
+            windows {
+                iconFile.set(project.file("logo2.ico"))
+            }
+            linux {
+                iconFile.set(project.file("logo.png"))
+            }
         }
     }
 }
