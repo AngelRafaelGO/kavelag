@@ -4,7 +4,7 @@ import org.kavelag.project.models.HttpRequest
 
 fun parseIncomingHttpRequest(httpRequest: String): HttpRequest {
     val requestMethod = extractMethod(httpRequest)
-    val requestRequestedResourceAddress = extractRequestedResourceUrl(httpRequest)
+    val requestRequestedResourcePath = extractRequestedResourcePath(httpRequest)
     val requestHTTPProtocolVersion = extractHTTPProtocolVersion(httpRequest)
     val requestHeaders = extractHeaders(httpRequest)
 
@@ -13,6 +13,6 @@ fun parseIncomingHttpRequest(httpRequest: String): HttpRequest {
     }
 
     val parsedRequest =
-        HttpRequest(requestMethod!!, requestRequestedResourceAddress!!, requestHTTPProtocolVersion!!, requestHeaders)
+        HttpRequest(requestMethod!!, requestRequestedResourcePath!!, requestHTTPProtocolVersion!!, requestHeaders)
     return parsedRequest
 }

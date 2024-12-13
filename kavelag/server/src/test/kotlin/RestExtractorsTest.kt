@@ -52,7 +52,7 @@ class RestExtractorsTest() {
     @Test
     fun shouldExtractRequestedResourcePathFromRequestWithQueryParams() {
         // ACT
-        val actual = extractRequestedResourceUrl(HTTP_GET_REQUEST_WITH_QUERY_PARAMS)
+        val actual = extractRequestedResourcePath(HTTP_GET_REQUEST_WITH_QUERY_PARAMS)
 
         // ASSERT
         assertEquals(HTTP_REQUESTED_RESOURCE_WITH_QUERY_PARAMS, actual)
@@ -61,7 +61,7 @@ class RestExtractorsTest() {
     @Test
     fun shouldExtractRequestedResourcePathFromRequestWithoutQueryParams() {
         // ACT
-        val actual = extractRequestedResourceUrl(HTTP_GET_REQUEST)
+        val actual = extractRequestedResourcePath(HTTP_GET_REQUEST)
 
         // ASSERT
         assertEquals(HTTP_REQUESTED_RESOURCE_WITHOUT_QUERY_PARAMS, actual)

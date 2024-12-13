@@ -10,9 +10,9 @@ fun extractHTTPProtocolVersion(httpRequest: String): String? {
     return httpProtocolVersion?.groupValues?.get(0)
 }
 
-fun extractRequestedResourceUrl(httpRequest: String): String? {
-    val requestedResourceUrl = extractLinesFromRequest(httpRequest)?.let { RestRegex.requestedResourceRegex.find(it) }
-    return requestedResourceUrl?.groupValues?.get(1)
+fun extractRequestedResourcePath(httpRequest: String): String? {
+    val requestedResourcePath = extractLinesFromRequest(httpRequest)?.let { RestRegex.requestedResourceRegex.find(it) }
+    return requestedResourcePath?.groupValues?.get(1)
 }
 
 fun extractHeaders(httpRequest: String): MutableMap<String, String> {
@@ -29,7 +29,7 @@ fun extractHeaders(httpRequest: String): MutableMap<String, String> {
 }
 
 /*
-Since HTTP is a structured protocol, this function can return the line that contains the element
+Since HTTP is a structured protocol, this function can return the line that contains the line
 needed by the calling function
  */
 fun extractLinesFromRequest(httpRequest: String): String? {

@@ -5,13 +5,13 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import kotlinx.coroutines.*
 import org.kavelag.project.routing.configureRouting
-import org.kavelag.project.socketController.SocketProxyReceiver
+import org.kavelag.project.socketController.ProxySocketReceiver
 
 fun main() {
     val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     appScope.launch {
         try {
-            SocketProxyReceiver.launchProxySocket("proxy is up!")
+            ProxySocketReceiver.launchProxySocket("proxy is up!")
         } catch (e: Exception) {
             println("Error in SocketProxyReceiver: ${e.message}")
         }
