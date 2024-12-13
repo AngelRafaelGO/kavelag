@@ -1,7 +1,7 @@
 import org.junit.jupiter.api.Assertions
 import org.junit.Test
 import org.junit.jupiter.api.DisplayName
-import org.kavelag.project.parser.bodyParser
+import org.kavelag.project.parser.extractBody
 
 class BodyParserTest {
 
@@ -22,7 +22,7 @@ class BodyParserTest {
                 """.trimIndent()
 
         //When
-        val actual = bodyParser(httpRequest)
+        val actual = extractBody(httpRequest)
 
 
         //Then
@@ -46,7 +46,7 @@ class BodyParserTest {
                 """.trimIndent()
 
         //When
-        val actual = bodyParser(httpRequest)
+        val actual = extractBody(httpRequest)
 
 
         //Then

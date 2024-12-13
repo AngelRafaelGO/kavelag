@@ -1,6 +1,6 @@
 import org.junit.Assert
 import org.junit.Test
-import org.kavelag.project.parser.paramsParser
+import org.kavelag.project.parser.extractParams
 
 class ParamsParser {
 
@@ -26,7 +26,7 @@ class ParamsParser {
         )
 
         //When
-        val actual = paramsParser(request)
+        val actual = extractParams(request)
 
         //Then
         Assert.assertEquals(expected, actual)
@@ -51,7 +51,7 @@ class ParamsParser {
         val expected = emptyMap<String, String>()
 
         //When
-        val actual = paramsParser(request)
+        val actual = extractParams(request)
 
         //Then
         Assert.assertEquals(expected, actual)
