@@ -12,9 +12,15 @@ fun parseIncomingHttpRequest(httpRequest: String): HttpRequest {
     if (requestMethod == "POST") {
         try {
             val parsedRequest =
-                HttpRequest(requestMethod, requestRequestedResourceAddress!!, requestHTTPProtocolVersion!!, requestHeaders, requestBody)
+                HttpRequest(
+                    requestMethod,
+                    requestRequestedResourcePath!!,
+                    requestHTTPProtocolVersion!!,
+                    requestHeaders,
+                    requestBody
+                )
             return parsedRequest
-        }catch (e: Exception){
+        } catch (e: Exception) {
             println(e)
         }
     }

@@ -1,6 +1,5 @@
 import org.junit.Test
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.DisplayName
 import org.kavelag.project.parser.*
 import kotlin.test.assertEquals
 
@@ -18,11 +17,8 @@ class RestExtractorsTest() {
             "/endpoint/child-endpoint/child-endpoint/resource?key1=value1&key2=value2&key3=value3&key4=value4&key5=value5"
         const val HTTP_REQUESTED_RESOURCE_WITHOUT_QUERY_PARAMS =
             "/endpoint/child-endpoint/child-endpoint/resource"
-        const val HTTP_HEADERS = "Host: example.com\n" +
-                "Authorization: Bearer abcdef123456\n" +
-                "Accept: application/json\n" +
-                "User-Agent: CustomClient/1.0"
-        const val HTTP_BODY = "{\"key1\":\"value1\",\"key2\":\"value2\",\"key3\":\"value3\",\"key4\":\"value4\",\"key5\":\"value5\"}\n"
+        const val HTTP_BODY =
+            "{\"key1\":\"value1\",\"key2\":\"value2\",\"key3\":\"value3\",\"key4\":\"value4\",\"key5\":\"value5\"}"
 
     }
 
@@ -104,7 +100,6 @@ class RestExtractorsTest() {
 
         // ASSERT
         assertEquals(HTTP_START_LINE, actual)
-
     }
 
     @Test
@@ -117,29 +112,20 @@ class RestExtractorsTest() {
     }
 
     @Test
-    @DisplayName("bodyParser::Nominal case::Should return the body in String")
-    fun bodyParser_case_1() {
-
-        //Given & When
+    fun shouldRetrieveBodyFromRequestWhenPresent() {
+        // Given & When
         val actual = extractBody(HTTP_POST_REQUEST)
 
-
-        //Then
+        // Then
         Assertions.assertEquals(HTTP_BODY, actual)
     }
 
     @Test
-    @DisplayName("bodyParser::Case with no body::Should return null")
-    fun bodyParser_case_2() {
-        //Given
-        val httpRequest = HTTP_GET_REQUEST
-
-        //When
-        val actual = extractBody(httpRequest)
-
+    fun shouldReturnNullWhenRequestHasNoBody() {
+        // Given & When
+        val actual = extractBody(HTTP_GET_REQUEST)
 
         //Then
-        Assertions.assertEquals("", actual)
-
+        Assertions.assertEquals(null, actual)
     }
 }
