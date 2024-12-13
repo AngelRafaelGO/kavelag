@@ -8,6 +8,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.kavelag.project.parser.parseIncomingHttpRequest
+import org.kavelag.project.targetServerProcessing.callTargetServer
 
 object ProxySocketReceiver {
     // TODO: move this to a shared configuration
@@ -22,13 +23,15 @@ object ProxySocketReceiver {
                     val socket = serverSocket.accept()
                     launch(Dispatchers.IO) {
                         try {
-                            parseIncomingHttpRequest(socket.openReadChannel().readRemaining().readText())
+                            val parsedRequest =
+                                parseIncomingHttpRequest(socket.openReadChannel().readRemaining().readText())
                             // TODO: apply action to network connection
                             // TODO: send request to destination server
+                            callTargetServer(parsedRequest)
                             // TODO: handle destination server response
                             // TODO: forward response to client
                         } catch (e: Throwable) {
-                            println("Error handling request parsing: ${e.message}")
+                            println("Error handling request parsing: ${e.message}, \r$e")
                         } finally {
                             try {
                                 socket.close()

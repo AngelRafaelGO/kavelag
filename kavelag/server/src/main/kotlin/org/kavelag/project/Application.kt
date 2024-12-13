@@ -1,12 +1,14 @@
 package org.kavelag.project
 
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import kotlinx.coroutines.*
-import org.kavelag.project.routing.configureRouting
 import org.kavelag.project.socketController.ProxySocketReceiver
 
+val httpClient = HttpClient(CIO)
 fun main() {
     val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     appScope.launch {
@@ -27,5 +29,4 @@ fun main() {
 }
 
 fun Application.module() {
-    configureRouting()
 }
