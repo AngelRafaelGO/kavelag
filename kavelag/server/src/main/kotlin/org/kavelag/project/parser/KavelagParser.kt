@@ -8,12 +8,11 @@ fun parseIncomingHttpRequest(httpRequest: String): HttpRequest {
     val requestHTTPProtocolVersion = extractHTTPProtocolVersion(httpRequest)
     val requestHeaders = extractHeaders(httpRequest)
     val requestBody = extractBody(httpRequest)
-    val requestParams = extractParams(httpRequest)
 
     if (requestMethod == "POST") {
         try {
             val parsedRequest =
-                HttpRequest(requestMethod, requestRequestedResourceAddress!!, requestParams, requestHTTPProtocolVersion!!, requestHeaders, requestBody)
+                HttpRequest(requestMethod, requestRequestedResourceAddress!!, requestHTTPProtocolVersion!!, requestHeaders, requestBody)
             return parsedRequest
         }catch (e: Exception){
             println(e)
@@ -21,6 +20,6 @@ fun parseIncomingHttpRequest(httpRequest: String): HttpRequest {
     }
 
     val parsedRequest =
-        HttpRequest(requestMethod!!, requestRequestedResourceAddress!!, requestParams, requestHTTPProtocolVersion!!, requestHeaders)
+        HttpRequest(requestMethod!!, requestRequestedResourceAddress!!, requestHTTPProtocolVersion!!, requestHeaders)
     return parsedRequest
 }

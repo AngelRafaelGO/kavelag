@@ -9,5 +9,4 @@ object RestRegex {
     val requestedResourceRegex: Regex = "^[A-Z]+\\s([\\/\\w\\.-]*(\\?.*)?)\\sHTTP/".toRegex()
     val methodRegex: Regex = "^[A-Z]+".toRegex()
     val bodyRegex: Regex = "(?s)\n\n(.*)".toRegex()
-    val paramsRegex: Regex = "[?&]([^=]+)=([^& ]+)".toRegex()
 }

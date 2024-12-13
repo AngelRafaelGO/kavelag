@@ -1,5 +1,6 @@
 package org.kavelag.project.parser
 
+import io.netty.util.internal.StringUtil
 import java.net.URLDecoder
 
 fun extractMethod(httpRequest: String): String? {
@@ -24,23 +25,6 @@ fun extractBody(httpRequest: String): String? {
         return result.groups[1]?.value
     }
     return null
-}
-
-fun extractParams(httpRequest: String): MutableMap<String, String> {
-    val paramsRegex = RestRegex.paramsRegex
-    val params = mutableMapOf<String, String>()
-
-    val result = paramsRegex.findAll(httpRequest)
-
-    result.forEach { match ->
-        val key = match.groups[1]?.value
-        val value = match.groups[2]?.value
-        if (key != null && value != null) {
-            params[URLDecoder.decode(key, "UTF-8")] = URLDecoder.decode(value, "UTF-8")
-        }
-    }
-
-    return params
 }
 
 fun extractHeaders(httpRequest: String): MutableMap<String, String> {
