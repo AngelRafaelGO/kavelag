@@ -1,5 +1,8 @@
 package org.kavelag.project.parser
 
+import io.netty.util.internal.StringUtil
+import java.net.URLDecoder
+
 fun extractMethod(httpRequest: String): String? {
     val httpMethod = extractLinesFromRequest(httpRequest)?.let { RestRegex.methodRegex.find(it) }
     return httpMethod?.value
@@ -13,6 +16,15 @@ fun extractHTTPProtocolVersion(httpRequest: String): String? {
 fun extractRequestedResourceUrl(httpRequest: String): String? {
     val requestedResourceUrl = extractLinesFromRequest(httpRequest)?.let { RestRegex.requestedResourceRegex.find(it) }
     return requestedResourceUrl?.groupValues?.get(1)
+}
+
+fun extractBody(httpRequest: String): String? {
+    val result = RestRegex.bodyRegex.find(httpRequest)
+
+    if (result != null) {
+        return result.groups[1]?.value
+    }
+    return null
 }
 
 fun extractHeaders(httpRequest: String): MutableMap<String, String> {

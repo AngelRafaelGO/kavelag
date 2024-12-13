@@ -1,4 +1,6 @@
 import org.junit.Test
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.DisplayName
 import org.kavelag.project.parser.*
 import kotlin.test.assertEquals
 
@@ -20,6 +22,8 @@ class RestExtractorsTest() {
                 "Authorization: Bearer abcdef123456\n" +
                 "Accept: application/json\n" +
                 "User-Agent: CustomClient/1.0"
+        const val HTTP_BODY = "{\"key1\":\"value1\",\"key2\":\"value2\",\"key3\":\"value3\",\"key4\":\"value4\",\"key5\":\"value5\"}\n"
+
     }
 
     @Test
@@ -110,5 +114,32 @@ class RestExtractorsTest() {
 
         // ASSERT
         assertEquals(HTTP_START_LINE, actual)
+    }
+
+    @Test
+    @DisplayName("bodyParser::Nominal case::Should return the body in String")
+    fun bodyParser_case_1() {
+
+        //Given & When
+        val actual = extractBody(HTTP_POST_REQUEST)
+
+
+        //Then
+        Assertions.assertEquals(HTTP_BODY, actual)
+    }
+
+    @Test
+    @DisplayName("bodyParser::Case with no body::Should return null")
+    fun bodyParser_case_2() {
+        //Given
+        val httpRequest = HTTP_GET_REQUEST
+
+        //When
+        val actual = extractBody(httpRequest)
+
+
+        //Then
+        Assertions.assertEquals("", actual)
+
     }
 }
