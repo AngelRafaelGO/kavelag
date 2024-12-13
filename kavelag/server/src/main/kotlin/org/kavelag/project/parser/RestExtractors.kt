@@ -19,7 +19,7 @@ fun extractRequestedResourceUrl(httpRequest: String): String? {
 }
 
 fun extractBody(httpRequest: String): String? {
-    val result = extractLinesFromRequest(httpRequest)?.let { RestRegex.bodyRegex.find(it) }
+    val result = RestRegex.bodyRegex.find(httpRequest)
 
     if (result != null) {
         return result.groups[1]?.value

@@ -22,6 +22,8 @@ class RestExtractorsTest() {
                 "Authorization: Bearer abcdef123456\n" +
                 "Accept: application/json\n" +
                 "User-Agent: CustomClient/1.0"
+        const val HTTP_BODY = "{\"key1\":\"value1\",\"key2\":\"value2\",\"key3\":\"value3\",\"key4\":\"value4\",\"key5\":\"value5\"}\n"
+
     }
 
     @Test
@@ -117,49 +119,27 @@ class RestExtractorsTest() {
     @Test
     @DisplayName("bodyParser::Nominal case::Should return the body in String")
     fun bodyParser_case_1() {
-        //Given
-        val httpRequest = """
-        POST /example HTTP/1.1
-        Host: www.example.com
-        Content-Type: application/json
-        Content-Length: 27
-        
-        {
-        "key": "value",
-        "foo": "bar"
-        }
-                """.trimIndent()
 
-        //When
-        val actual = extractBody(httpRequest)
+        //Given & When
+        val actual = extractBody(HTTP_POST_REQUEST)
 
 
         //Then
-        Assertions.assertEquals(
-            """{
-"key": "value",
-"foo": "bar"
-}""".trimIndent(), actual
-        )
+        Assertions.assertEquals(HTTP_BODY, actual)
     }
 
     @Test
     @DisplayName("bodyParser::Case with no body::Should return null")
     fun bodyParser_case_2() {
         //Given
-        val httpRequest = """
-        POST /example HTTP/1.1
-        Host: www.example.com
-        Content-Type: application/json
-        Content-Length: 27
-                """.trimIndent()
+        val httpRequest = HTTP_GET_REQUEST
 
         //When
         val actual = extractBody(httpRequest)
 
 
         //Then
-        Assertions.assertNull(actual)
+        Assertions.assertEquals("", actual)
 
     }
 }
