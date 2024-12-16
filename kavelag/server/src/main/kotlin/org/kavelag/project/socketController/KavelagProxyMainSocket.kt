@@ -11,7 +11,7 @@ import org.kavelag.project.KAVELAG_PROXY_PORT
 import org.kavelag.project.parser.parseIncomingHttpRequest
 import org.kavelag.project.targetServerProcessing.callTargetServer
 
-object ProxySocketReceiver {
+object KavelagProxyMainSocket {
     // TODO: move this to a shared configuration
     private val selectorManager = ActorSelectorManager(Dispatchers.IO)
 

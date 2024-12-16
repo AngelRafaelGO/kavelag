@@ -6,7 +6,7 @@ import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import kotlinx.coroutines.*
-import org.kavelag.project.socketController.ProxySocketReceiver
+import org.kavelag.project.socketController.KavelagProxyMainSocket
 
 val httpClient = HttpClient(CIO)
 
@@ -30,7 +30,7 @@ suspend fun listenForConfiguration() {
     for (config in SetUserConfigurationChannel.destinationServerAddress) {
         println("Received user configuration for proxy socket start up: URL=${config.url}, Port=${config.port}")
         try {
-            ProxySocketReceiver.launchProxySocket(config.url, config.port)
+            KavelagProxyMainSocket.launchProxySocket(config.url, config.port)
         } catch (e: Exception) {
             println("Error in SocketProxyReceiver: ${e.message}")
         }
