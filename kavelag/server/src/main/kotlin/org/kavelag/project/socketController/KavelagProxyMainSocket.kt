@@ -12,9 +12,7 @@ import org.kavelag.project.parser.parseIncomingHttpRequest
 import org.kavelag.project.targetServerProcessing.callTargetServer
 
 object KavelagProxyMainSocket {
-    // TODO: move this to a shared configuration
     private val selectorManager = ActorSelectorManager(Dispatchers.IO)
-
     suspend fun launchProxySocket(destinationURL: String, destinationPort: Int) {
         val serverSocket = aSocket(selectorManager).tcp().bind(port = KAVELAG_PROXY_PORT)
         try {

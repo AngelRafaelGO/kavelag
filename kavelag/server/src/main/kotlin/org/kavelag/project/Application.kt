@@ -16,7 +16,7 @@ fun startServer() {
         listenForConfiguration()
     }
     Runtime.getRuntime().addShutdownHook(Thread {
-        println("Shutting down application...")
+        println("Shutting down Kavelag proxy server...")
         serverScope.cancel()
     })
     embeddedServer(Netty, port = SERVER_PORT, host = "0.0.0.0", module = Application::module)
@@ -32,7 +32,7 @@ suspend fun listenForConfiguration() {
         try {
             KavelagProxyMainSocket.launchProxySocket(config.url, config.port)
         } catch (e: Exception) {
-            println("Error in SocketProxyReceiver: ${e.message}")
+            println("Error in KavelagProxyMainSocket: ${e.message}")
         }
     }
 }
