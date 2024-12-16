@@ -483,8 +483,8 @@ fun App() {
                             // Action à exécuter lors du clic sur le bouton
                             clientScope.launch {
                                 try {
-                                    val configuration = UserProxyConfig("hello", "123".toInt())
-                                    SetUserConfigurationChannel.configurationChannel.send(configuration)
+                                    val configuration = DestinationServerConfig("hello", "123".toInt())
+                                    SetUserConfigurationChannel.destinationServerAddress.send(configuration)
                                 } catch (e: Exception) {
                                     println("Error: ${e.message}")
                                 }

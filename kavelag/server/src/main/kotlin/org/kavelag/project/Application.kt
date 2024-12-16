@@ -27,7 +27,7 @@ fun Application.module() {
 }
 
 suspend fun listenForConfiguration() {
-    for (config in SetUserConfigurationChannel.configurationChannel) {
+    for (config in SetUserConfigurationChannel.destinationServerAddress) {
         println("Received user configuration for proxy socket start up: URL=${config.url}, Port=${config.port}")
         try {
             ProxySocketReceiver.launchProxySocket(config.url, config.port)
