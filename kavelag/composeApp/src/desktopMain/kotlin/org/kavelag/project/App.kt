@@ -1,10 +1,7 @@
 package org.kavelag.project
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -21,16 +18,20 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 
 import kavelag.composeapp.generated.resources.Res
 import kavelag.composeapp.generated.resources.compose_multiplatform
 import kavelag.composeapp.generated.resources.logo
+import kotlinx.coroutines.delay
 import org.jetbrains.skia.impl.Stats.enabled
 @Composable
 private fun FunctionBox(name : String){
@@ -169,8 +170,14 @@ private fun CustomTextField(
 @Preview
 fun App() {
     var text by remember { mutableStateOf("") }
-
-
+    var number by remember { mutableStateOf(1) }
+    var showMessage by remember { mutableStateOf(false) }
+    if (showMessage) {
+        LaunchedEffect(Unit) {
+            delay(3000) // Attendre 3 secondes
+            showMessage = false // Masquer le message après le délai
+        }
+    }
     MaterialTheme {
         var showContent by remember { mutableStateOf(false) }
         Column(
@@ -295,6 +302,7 @@ fun App() {
                     Modifier
                         .fillMaxWidth()
                         .background(Color(0xFFF8F8F8))
+                        .verticalScroll(rememberScrollState())
                         .fillMaxHeight(),
                     horizontalAlignment = Alignment.CenterHorizontally // Aligne tous les enfants de la colonne horizontalement
                 ) {
@@ -305,58 +313,139 @@ fun App() {
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(bottom = 16.dp, top = 10.dp) // Ajoute un espace en dessous
                     )
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically // Centre verticalement les éléments du Row
+                    Column(
+                        Modifier
+                            .padding(start = 10.dp)
+                            .fillMaxWidth(),
+                        horizontalAlignment = Alignment.Start // Aligne tous les enfants de la colonne horizontalement
                     ) {
-                        Text(
-                            text = "Port",
-                            fontSize = 15.sp,
-                            modifier = Modifier.padding(end = 10.dp, bottom = 2.dp) // Espace à droite de "Url"
-                        )
 
-                        CustomTextField(
-                            leadingIcon = null,
-                            trailingIcon = null,
-                            modifier = Modifier
-                                .background(
-                                    MaterialTheme.colors.surface,
-                                )
-                                .border(0.5.dp, Color.Gray, shape = RoundedCornerShape(3.dp))
-                                .fillMaxWidth(0.3f) // Largeur fixe du champ texte
-                                .height(22.dp), // Hauteur fixe pour un bon rendu
-                            fontSize = 14.sp,
-                            placeholderText = "..."
-                        )
-                    }
-                    // Ligne contenant "Url" et le champ texte
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth(), // Remplir toute la largeur disponible
-                        contentAlignment = Alignment.Center // Centrer le contenu à l'intérieur de la Box
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically // Centre verticalement les éléments du Row
-                        ) {
-                            Text(
-                                text = "Url",
-                                fontSize = 15.sp,
-                                modifier = Modifier.padding(end = 10.dp, bottom = 2.dp) // Espace à droite de "Url"
-                            )
-
-                            CustomTextField(
-                                leadingIcon = null,
-                                trailingIcon = null,
+                            Box(
                                 modifier = Modifier
-                                    .background(
-                                        MaterialTheme.colors.surface,
+                                    .fillMaxWidth(), // Remplir toute la largeur disponible
+                                // Centrer le contenu à l'intérieur de la Box
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically // Centre verticalement les éléments du Row
+                                ) {
+                                    Text(
+                                        text = "Url",
+                                        fontSize = 15.sp,
+                                        modifier = Modifier
+                                            .padding(end = 10.dp, bottom = 2.dp)
+                                            .fillMaxWidth(0.1f)
+
                                     )
-                                    .border(0.5.dp, Color.Gray, shape = RoundedCornerShape(3.dp))
-                                    .fillMaxWidth(0.8f) // Largeur fixe du champ texte
-                                    .height(22.dp), // Hauteur fixe pour un bon rendu
-                                fontSize = 14.sp,
-                                placeholderText = "..."
+                                    CustomTextField(
+                                        leadingIcon = null,
+                                        trailingIcon = null,
+                                        modifier = Modifier
+                                            .background(
+                                                MaterialTheme.colors.surface,
+                                            )
+                                            .border(0.5.dp, Color.Gray, shape = RoundedCornerShape(3.dp))
+                                            .fillMaxWidth(0.8f) // Largeur fixe du champ texte
+                                            .height(22.dp), // Hauteur fixe pour un bon rendu
+                                        fontSize = 14.sp,
+                                        placeholderText = "..."
+                                    )
+
+                                }
+                            }
+
+                            Row(
+                                modifier = Modifier
+                                .padding(bottom = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically // Centre verticalement les éléments du Row
+                            ) {
+
+                                Text(
+                                    text = "Port",
+                                    fontSize = 15.sp,
+                                    modifier = Modifier
+                                        .padding(end = 10.dp, bottom = 2.dp)
+                                        .fillMaxWidth(0.1f)
+
+                                )
+                                repeat(number) { index ->
+                                    // Commence une nouvelle ligne pour chaque 3 éléments
+                                    if (index % 3 == 0) {
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(end = 10.dp),
+                                            horizontalArrangement = Arrangement.SpaceBetween // Espacement uniforme entre les éléments
+                                        ) {
+                                            // Ajout des éléments de la ligne
+                                            for (i in 0 until 3) {
+                                                if (index + i < number) {
+                                                    CustomTextField(
+                                                        leadingIcon = null,
+                                                        trailingIcon = null,
+                                                        modifier = Modifier
+                                                            .background(
+                                                                MaterialTheme.colors.surface,
+                                                            )
+                                                            .border(0.5.dp, Color.Gray, shape = RoundedCornerShape(3.dp))
+                                                            .weight(1f) // Largeur proportionnelle // Espacement latéral
+                                                            .height(22.dp), // Hauteur fixe pour un bon rendu
+                                                        fontSize = 14.sp,
+                                                        placeholderText = "..."
+                                                    )
+                                                } else {
+                                                    Spacer(modifier = Modifier.weight(1f)) // Ajout d'un espace vide si pas assez d'éléments
+                                                }
+                                            }
+                                            Spacer(modifier = Modifier.width(20.dp))
+                                            if(number != 1) {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .size(20.dp) // Taille personnalisée du bouton
+                                                        .background(
+                                                            Color.DarkGray,
+                                                            shape = RoundedCornerShape(4.dp)
+                                                        ) // Fond carré
+                                                        .clickable { number--; if(showMessage == true){showMessage = false}},
+
+                                                    contentAlignment = Alignment.Center // Centre l'icône dans la Box
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Filled.Delete,
+                                                        contentDescription = "Delete icon",
+                                                        tint = Color.White, // Couleur de l'icône en blanc
+                                                        modifier = Modifier.size(12.dp) // Taille de l'icône
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+
+                        }
+                    }
+                        Box(
+                            modifier = Modifier
+                                .size(20.dp) // Taille personnalisée du bouton
+                                .background(Color.DarkGray, shape = RoundedCornerShape(4.dp)) // Fond carré
+                                .clickable { if(number<3){number++}else{showMessage = true} },
+                            contentAlignment = Alignment.Center // Centre l'icône dans la Box
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Add,
+                                contentDescription = "Add icon",
+                                tint = Color.White, // Couleur de l'icône en blanc
+                                modifier = Modifier.size(12.dp) // Taille de l'icône
                             )
                         }
+                    if (showMessage) {
+                        Text(
+                            text = "La limite de ports est de 3",
+                            color = Color.Red,
+                            fontSize = 12.sp,
+                            fontStyle = FontStyle.Italic,
+                            modifier = Modifier.padding(top = 3.dp)
+                        )
                     }
 
                     Divider(
@@ -377,6 +466,27 @@ fun App() {
                     FunctionBox("Latency")
                     FunctionBox("Package Loss")
                     FunctionBox("Network Error")
+
+                    Spacer(modifier = Modifier.height(20.dp)) // Espacement avant le bouton
+                    Button(
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = Color.DarkGray, // Couleur de fond du bouton
+                            contentColor = Color.White // Couleur du texte ou du contenu
+                        ),
+                        onClick = {
+                            // Action à exécuter lors du clic sur le bouton
+                        },
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .fillMaxWidth(0.5f), // Le bouton occupe 50% de la largeur
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = "Send Request",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
         }
