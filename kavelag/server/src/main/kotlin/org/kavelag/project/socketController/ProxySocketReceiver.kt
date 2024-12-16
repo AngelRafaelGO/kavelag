@@ -7,16 +7,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.kavelag.project.KAVELAG_PROXY_PORT
 import org.kavelag.project.parser.parseIncomingHttpRequest
 import org.kavelag.project.targetServerProcessing.callTargetServer
 
 object ProxySocketReceiver {
     // TODO: move this to a shared configuration
-    private const val kavelagProxyPort = 9002
     private val selectorManager = ActorSelectorManager(Dispatchers.IO)
 
-    suspend fun launchProxySocket(messageToSend: String) {
-        val serverSocket = aSocket(selectorManager).tcp().bind(port = kavelagProxyPort)
+    suspend fun launchProxySocket(destinationURL: String, destinationPort: Int) {
+        val serverSocket = aSocket(selectorManager).tcp().bind(port = KAVELAG_PROXY_PORT)
         try {
             coroutineScope {
                 while (true) {
@@ -27,7 +27,7 @@ object ProxySocketReceiver {
                                 parseIncomingHttpRequest(socket.openReadChannel().readRemaining().readText())
                             // TODO: apply action to network connection
                             // TODO: send request to destination server
-                            callTargetServer(parsedRequest)
+                            callTargetServer(destinationURL, destinationPort, parsedRequest)
                             // TODO: handle destination server response
                             // TODO: forward response to client
                         } catch (e: Throwable) {

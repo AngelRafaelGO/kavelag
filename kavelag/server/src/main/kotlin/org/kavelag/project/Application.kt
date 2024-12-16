@@ -11,12 +11,9 @@ import org.kavelag.project.socketController.ProxySocketReceiver
 val httpClient = HttpClient(CIO)
 fun main() {
     val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
     appScope.launch {
-        try {
-            ProxySocketReceiver.launchProxySocket("proxy is up!")
-        } catch (e: Exception) {
-            println("Error in SocketProxyReceiver: ${e.message}")
-        }
+        listenForConfiguration()
     }
 
     Runtime.getRuntime().addShutdownHook(Thread {
@@ -29,4 +26,15 @@ fun main() {
 }
 
 fun Application.module() {
+}
+
+suspend fun listenForConfiguration() {
+    for (config in SetUserConfigurationChannel.configurationChannel) {
+        println("Received user configuration for proxy socket start up: URL=${config.url}, Port=${config.port}")
+        try {
+            ProxySocketReceiver.launchProxySocket(config.url, config.port)
+        } catch (e: Exception) {
+            println("Error in SocketProxyReceiver: ${e.message}")
+        }
+    }
 }
