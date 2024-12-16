@@ -1,40 +1,34 @@
 package org.kavelag.project
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
-import androidx.compose.material.TextFieldDefaults.indicatorLine
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.TextUnit
-
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kavelag.composeapp.generated.resources.Res
-import kavelag.composeapp.generated.resources.compose_multiplatform
 import kavelag.composeapp.generated.resources.logo
-import kotlinx.coroutines.delay
-import org.jetbrains.skia.impl.Stats.enabled
+import kotlinx.coroutines.*
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.ui.tooling.preview.Preview
+
 @Composable
-private fun FunctionBox(name : String){
+private fun FunctionBox(name: String) {
     val expandedState = remember { mutableStateOf(false) }
     Box(
         modifier = Modifier
@@ -64,7 +58,7 @@ private fun FunctionBox(name : String){
                 Text(
                     text = name,
                     fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold
                 )
 
                 // Flèche qui change de direction
@@ -76,7 +70,7 @@ private fun FunctionBox(name : String){
             }
         }
     }
-    if(expandedState.value) {
+    if (expandedState.value) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -115,6 +109,7 @@ private fun FunctionBox(name : String){
         }
     }
 }
+
 @Composable
 private fun CustomTextField(
     modifier: Modifier = Modifier,
@@ -169,6 +164,7 @@ private fun CustomTextField(
 @Composable
 @Preview
 fun App() {
+    val clientScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     var text by remember { mutableStateOf("") }
     var number by remember { mutableStateOf(1) }
     var showMessage by remember { mutableStateOf(false) }
@@ -261,7 +257,7 @@ fun App() {
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f)
-                            .border(0.5.dp, Color.Gray, shape = RoundedCornerShape(5.dp)) 
+                            .border(0.5.dp, Color.Gray, shape = RoundedCornerShape(5.dp))
                     ) {
                         Row(
                             modifier = Modifier
@@ -320,124 +316,134 @@ fun App() {
                         horizontalAlignment = Alignment.Start // Aligne tous les enfants de la colonne horizontalement
                     ) {
 
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth(), // Remplir toute la largeur disponible
-                                // Centrer le contenu à l'intérieur de la Box
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically // Centre verticalement les éléments du Row
-                                ) {
-                                    Text(
-                                        text = "Url",
-                                        fontSize = 15.sp,
-                                        modifier = Modifier
-                                            .padding(end = 10.dp, bottom = 2.dp)
-                                            .fillMaxWidth(0.1f)
-
-                                    )
-                                    CustomTextField(
-                                        leadingIcon = null,
-                                        trailingIcon = null,
-                                        modifier = Modifier
-                                            .background(
-                                                MaterialTheme.colors.surface,
-                                            )
-                                            .border(0.5.dp, Color.Gray, shape = RoundedCornerShape(3.dp))
-                                            .fillMaxWidth(0.8f) // Largeur fixe du champ texte
-                                            .height(22.dp), // Hauteur fixe pour un bon rendu
-                                        fontSize = 14.sp,
-                                        placeholderText = "..."
-                                    )
-
-                                }
-                            }
-
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth(), // Remplir toute la largeur disponible
+                            // Centrer le contenu à l'intérieur de la Box
+                        ) {
                             Row(
-                                modifier = Modifier
-                                .padding(bottom = 10.dp),
                                 verticalAlignment = Alignment.CenterVertically // Centre verticalement les éléments du Row
                             ) {
-
                                 Text(
-                                    text = "Port",
+                                    text = "Url",
                                     fontSize = 15.sp,
                                     modifier = Modifier
                                         .padding(end = 10.dp, bottom = 2.dp)
                                         .fillMaxWidth(0.1f)
 
                                 )
-                                repeat(number) { index ->
-                                    // Commence une nouvelle ligne pour chaque 3 éléments
-                                    if (index % 3 == 0) {
-                                        Row(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(end = 10.dp),
-                                            horizontalArrangement = Arrangement.SpaceBetween // Espacement uniforme entre les éléments
-                                        ) {
-                                            // Ajout des éléments de la ligne
-                                            for (i in 0 until 3) {
-                                                if (index + i < number) {
-                                                    CustomTextField(
-                                                        leadingIcon = null,
-                                                        trailingIcon = null,
-                                                        modifier = Modifier
-                                                            .background(
-                                                                MaterialTheme.colors.surface,
-                                                            )
-                                                            .border(0.5.dp, Color.Gray, shape = RoundedCornerShape(3.dp))
-                                                            .weight(1f) // Largeur proportionnelle // Espacement latéral
-                                                            .height(22.dp), // Hauteur fixe pour un bon rendu
-                                                        fontSize = 14.sp,
-                                                        placeholderText = "..."
-                                                    )
-                                                } else {
-                                                    Spacer(modifier = Modifier.weight(1f)) // Ajout d'un espace vide si pas assez d'éléments
-                                                }
-                                            }
-                                            Spacer(modifier = Modifier.width(20.dp))
-                                            if(number != 1) {
-                                                Box(
-                                                    modifier = Modifier
-                                                        .size(20.dp) // Taille personnalisée du bouton
-                                                        .background(
-                                                            Color.DarkGray,
-                                                            shape = RoundedCornerShape(4.dp)
-                                                        ) // Fond carré
-                                                        .clickable { number--; if(showMessage == true){showMessage = false}},
+                                CustomTextField(
+                                    leadingIcon = null,
+                                    trailingIcon = null,
+                                    modifier = Modifier
+                                        .background(
+                                            MaterialTheme.colors.surface,
+                                        )
+                                        .border(0.5.dp, Color.Gray, shape = RoundedCornerShape(3.dp))
+                                        .fillMaxWidth(0.8f) // Largeur fixe du champ texte
+                                        .height(22.dp), // Hauteur fixe pour un bon rendu
+                                    fontSize = 14.sp,
+                                    placeholderText = "..."
+                                )
 
-                                                    contentAlignment = Alignment.Center // Centre l'icône dans la Box
-                                                ) {
-                                                    Icon(
-                                                        imageVector = Icons.Filled.Delete,
-                                                        contentDescription = "Delete icon",
-                                                        tint = Color.White, // Couleur de l'icône en blanc
-                                                        modifier = Modifier.size(12.dp) // Taille de l'icône
-                                                    )
-                                                }
+                            }
+                        }
+
+                        Row(
+                            modifier = Modifier
+                                .padding(bottom = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically // Centre verticalement les éléments du Row
+                        ) {
+
+                            Text(
+                                text = "Port",
+                                fontSize = 15.sp,
+                                modifier = Modifier
+                                    .padding(end = 10.dp, bottom = 2.dp)
+                                    .fillMaxWidth(0.1f)
+
+                            )
+                            repeat(number) { index ->
+                                // Commence une nouvelle ligne pour chaque 3 éléments
+                                if (index % 3 == 0) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(end = 10.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween // Espacement uniforme entre les éléments
+                                    ) {
+                                        // Ajout des éléments de la ligne
+                                        for (i in 0 until 3) {
+                                            if (index + i < number) {
+                                                CustomTextField(
+                                                    leadingIcon = null,
+                                                    trailingIcon = null,
+                                                    modifier = Modifier
+                                                        .background(
+                                                            MaterialTheme.colors.surface,
+                                                        )
+                                                        .border(0.5.dp, Color.Gray, shape = RoundedCornerShape(3.dp))
+                                                        .weight(1f) // Largeur proportionnelle // Espacement latéral
+                                                        .height(22.dp), // Hauteur fixe pour un bon rendu
+                                                    fontSize = 14.sp,
+                                                    placeholderText = "..."
+                                                )
+                                            } else {
+                                                Spacer(modifier = Modifier.weight(1f)) // Ajout d'un espace vide si pas assez d'éléments
+                                            }
+                                        }
+                                        Spacer(modifier = Modifier.width(20.dp))
+                                        if (number != 1) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(20.dp) // Taille personnalisée du bouton
+                                                    .background(
+                                                        Color.DarkGray,
+                                                        shape = RoundedCornerShape(4.dp)
+                                                    ) // Fond carré
+                                                    .clickable {
+                                                        number--; if (showMessage == true) {
+                                                        showMessage = false
+                                                    }
+                                                    },
+
+                                                contentAlignment = Alignment.Center // Centre l'icône dans la Box
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Filled.Delete,
+                                                    contentDescription = "Delete icon",
+                                                    tint = Color.White, // Couleur de l'icône en blanc
+                                                    modifier = Modifier.size(12.dp) // Taille de l'icône
+                                                )
                                             }
                                         }
                                     }
                                 }
+                            }
 
 
                         }
                     }
-                        Box(
-                            modifier = Modifier
-                                .size(20.dp) // Taille personnalisée du bouton
-                                .background(Color.DarkGray, shape = RoundedCornerShape(4.dp)) // Fond carré
-                                .clickable { if(number<3){number++}else{showMessage = true} },
-                            contentAlignment = Alignment.Center // Centre l'icône dans la Box
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Add,
-                                contentDescription = "Add icon",
-                                tint = Color.White, // Couleur de l'icône en blanc
-                                modifier = Modifier.size(12.dp) // Taille de l'icône
-                            )
-                        }
+                    Box(
+                        modifier = Modifier
+                            .size(20.dp) // Taille personnalisée du bouton
+                            .background(Color.DarkGray, shape = RoundedCornerShape(4.dp)) // Fond carré
+                            .clickable {
+                                if (number < 3) {
+                                    number++
+                                } else {
+                                    showMessage = true
+                                }
+                            },
+                        contentAlignment = Alignment.Center // Centre l'icône dans la Box
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Add,
+                            contentDescription = "Add icon",
+                            tint = Color.White, // Couleur de l'icône en blanc
+                            modifier = Modifier.size(12.dp) // Taille de l'icône
+                        )
+                    }
                     if (showMessage) {
                         Text(
                             text = "La limite de ports est de 3",
@@ -475,6 +481,15 @@ fun App() {
                         ),
                         onClick = {
                             // Action à exécuter lors du clic sur le bouton
+                            clientScope.launch {
+                                try {
+                                    val configuration = UserProxyConfig("hello", "123".toInt())
+                                    SetUserConfigurationChannel.configurationChannel.send(configuration)
+                                } catch (e: Exception) {
+                                    println("Error: ${e.message}")
+                                }
+                            }
+
                         },
                         modifier = Modifier
                             .padding(16.dp)

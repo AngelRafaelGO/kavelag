@@ -11,7 +11,6 @@ kotlin {
 
     sourceSets {
         val desktopMain by getting
-
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)
@@ -22,7 +21,8 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtime.compose)
             implementation(projects.shared)
-
+            implementation(libs.kotlinx.coroutines.core)
+            implementation(project(":server"))
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)

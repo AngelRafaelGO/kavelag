@@ -9,18 +9,16 @@ import kotlinx.coroutines.*
 import org.kavelag.project.socketController.ProxySocketReceiver
 
 val httpClient = HttpClient(CIO)
-fun main() {
-    val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    appScope.launch {
+fun startServer() {
+    val serverScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    serverScope.launch {
         listenForConfiguration()
     }
-
     Runtime.getRuntime().addShutdownHook(Thread {
         println("Shutting down application...")
-        appScope.cancel()
+        serverScope.cancel()
     })
-
     embeddedServer(Netty, port = SERVER_PORT, host = "0.0.0.0", module = Application::module)
         .start(wait = true)
 }
