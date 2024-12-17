@@ -451,8 +451,8 @@ fun App() {
                                         if (Url.isNotEmpty() && port.isNotEmpty() && FunctionAlreadySelected.isNotEmpty()) {
                                             println(Url)
                                             println(port)
-//                                            val configuration = DestinationServerConfig(Url, port.toInt())
-//                                            SetUserConfigurationChannel.destinationServerAddress.send(configuration)
+                                            val configuration = DestinationServerConfig(Url, port.toInt())
+                                            SetUserConfigurationChannel.destinationServerAddress.send(configuration)
                                             if (LatencyParam.isNotEmpty()) {
                                                 println(LatencyParam)
                                             }
