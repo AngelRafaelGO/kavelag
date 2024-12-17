@@ -8,6 +8,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.kavelag.project.KAVELAG_PROXY_PORT
+import org.kavelag.project.network.networkIssueSelector
 import org.kavelag.project.parser.parseIncomingHttpRequest
 import org.kavelag.project.targetServerProcessing.callTargetServer
 
@@ -23,7 +24,7 @@ object KavelagProxyMainSocket {
                         try {
                             val parsedRequest =
                                 parseIncomingHttpRequest(socket.openReadChannel().readRemaining().readText())
-                            // TODO: apply action to network connection
+                            networkIssueSelector()
                             // TODO: send request to destination server
                             callTargetServer(destinationURL, destinationPort, parsedRequest)
                             // TODO: handle destination server response

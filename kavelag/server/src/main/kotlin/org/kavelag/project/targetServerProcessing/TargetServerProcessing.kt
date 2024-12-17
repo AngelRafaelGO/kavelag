@@ -5,5 +5,5 @@ import org.kavelag.project.httpClient
 import org.kavelag.project.models.HttpRequest
 
 suspend fun callTargetServer(destinationURL: String, destinationPort: Int, httpRequest: HttpRequest) {
-    val serverResponse = httpClient.get("${destinationURL}:${destinationPort}")
+    val serverResponse = httpClient.get("${destinationURL}:${destinationPort}/${httpRequest.requestedResource}")
 }
