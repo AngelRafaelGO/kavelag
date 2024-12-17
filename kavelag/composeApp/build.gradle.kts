@@ -22,7 +22,6 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtime.compose)
             implementation(projects.shared)
-
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
@@ -30,6 +29,7 @@ kotlin {
         }
     }
 }
+
 
 
 compose.desktop {
