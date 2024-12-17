@@ -32,6 +32,7 @@ kotlin {
 }
 
 
+
 compose.desktop {
     application {
         mainClass = "org.kavelag.project.MainKt"
