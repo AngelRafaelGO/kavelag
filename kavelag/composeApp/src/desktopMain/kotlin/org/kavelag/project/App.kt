@@ -444,36 +444,38 @@ fun App() {
                             contentColor = Color.White // Couleur du texte ou du contenu
                         ),
                         onClick = {
-                            // Action à exécuter lors du clic sur le bouton
-                            clientScope.launch {
-                                try {
-                                    for (port in portValues) {
-                                        if (Url.isNotEmpty() && port.isNotEmpty() && FunctionAlreadySelected.isNotEmpty()) {
-//                                            println(Url)
-//                                            println(port)
-                                            val configuration = DestinationServerConfig(Url, port.toInt())
-                                            SetUserConfigurationChannel.destinationServerAddress.send(configuration)
-                                            if (LatencyParam.isNotEmpty()) {
-                                                println(LatencyParam)
-                                                val param = AppliedNetworkAction("latency", LatencyParam.toInt())
-                                                SetUserConfigurationChannel.appliedNetworkAction.send(param)
-                                            }
-                                            if (PackageLossEnabled) {
-                                                println(PackageLossEnabled)
-                                            }
-                                            if (NetworkErrorEnabled) {
-                                                println(NetworkErrorEnabled)
-                                            }
-                                            isProxyRunning = !isProxyRunning
-                                        } else {
-                                            showSendError = true
-                                        }
-                                    }
-                                } catch (e: Exception) {
-                                    println("Error: ${e.message}")
-                                }
-                            }
 
+                            if (!isProxyRunning) {
+                                if (Url.isNotEmpty() && portValues.isNotEmpty() && FunctionAlreadySelected.isNotEmpty()) {
+                                    if (portValues.all { it.isNotEmpty() }) {
+                                        clientScope.launch {
+                                            try {
+                                                println(Url)
+                                                println(portValues)
+//                                            val configuration = DestinationServerConfig(Url, portValues)
+//                                            SetUserConfigurationChannel.destinationServerAddress.send(configuration)
+                                                if (LatencyParam.isNotEmpty()) {
+                                                    println(LatencyParam)
+                                                }
+                                                if (PackageLossEnabled) {
+                                                    println(PackageLossEnabled)
+                                                }
+                                                if (NetworkErrorEnabled) {
+                                                    println(NetworkErrorEnabled)
+                                                }
+                                                isProxyRunning = !isProxyRunning
+                                            } catch (e: Exception) {
+                                                println("Error: ${e.message}")
+                                            }
+                                        }
+                                    } else {
+                                        showSendError = true
+                                    }
+                                } else {
+                                    showSendError = true
+                                }
+                            } else
+                                isProxyRunning = !isProxyRunning
                         },
                         modifier = Modifier
                             .padding(16.dp)
@@ -485,8 +487,6 @@ fun App() {
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold
                         )
-
-
                     }
                 }
             }
@@ -509,8 +509,14 @@ private fun PopUpHelp(onDismiss: () -> Unit) {
                     .fillMaxWidth()
             ) {
                 Text(
-                    text = "Le Lorem Ipsum est simplement du faux texte employé dans la composition et la mise en page avant impression. Le Lorem Ipsum est le faux texte standard de l'imprimerie depuis les années 1500, quand un imprimeur anonyme assembla ensemble des morceaux de texte pour réaliser un livre spécimen de polices de texte. Il n'a pas fait que survivre cinq siècles, mais s'est aussi adapté à la bureautique informatique, sans que son contenu n'en soit modifié. Il a été popularisé dans les années 1960 grâce à la vente de feuilles Letraset contenant des passages du Lorem Ipsum, et, plus récemment, par son inclusion dans des applications de mise en page de texte, comme Aldus PageMaker.",
+                    text = "Notice d'utilisation de Kavelag:",
                     fontSize = 18.sp,
+                    fontStyle = FontStyle.Italic,
+                    modifier = Modifier.padding(bottom = 2.dp)
+                )
+                Text(
+                    text = "Connecter votre application (Client) a notre proxy via une requête à cette adresse : \"http://localhost:8080/\" \n\nPar la suite remplisser sur l'interface Kavelag les champs suivant : Url, Port et la fonctionalité souhaité. \n\nIl y a plusieurs type de fonctionalités : \n -Latency: Qui simule une latence réseau sur le chemin de votre requête.\n -Package Loss: qui simule une perte de packet lors de la reception de la requête.\n -Network Error: qui simule une perte de réseau total durant le chemin retour de la requête.",
+                    fontSize = 13.sp,
                     fontStyle = FontStyle.Italic,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
@@ -535,7 +541,6 @@ fun FunctionBox(
         if (FunctionAlreadySelected != name && FunctionAlreadySelected != "")
             expandedState.value = false
     }
-
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -545,7 +550,6 @@ fun FunctionBox(
                     expandedState.value = !expandedState.value
             }
     ) {
-        // Header with title and arrow icon
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -568,7 +572,6 @@ fun FunctionBox(
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold
                 )
-
                 Icon(
                     imageVector = if (expandedState.value) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
                     contentDescription = "Arrow",
