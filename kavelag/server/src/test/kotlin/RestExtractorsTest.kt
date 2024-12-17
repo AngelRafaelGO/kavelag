@@ -115,6 +115,7 @@ class RestExtractorsTest() {
     fun shouldRetrieveBodyFromRequestWhenPresent() {
         // Given & When
         val actual = extractBody(HTTP_POST_REQUEST)
+        println(actual)
 
         // Then
         Assertions.assertEquals(HTTP_BODY, actual)
