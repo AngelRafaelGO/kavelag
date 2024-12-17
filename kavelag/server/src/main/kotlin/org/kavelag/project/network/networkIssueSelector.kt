@@ -5,9 +5,10 @@ import org.kavelag.project.listener.listenerForParams
 
 suspend fun networkIssueSelector(){
     val paramFromListener = listenerForParams()
-    val action = paramFromListener.appliedNetworkAction.lowercase().trim()
+    val action = paramFromListener!!.appliedNetworkAction.lowercase().trim()
     val param = paramFromListener.params
 
+    println("networkIssueSelector::action: $action, param: $param")
     when(action){
         "latency" -> networkLatency(param.toLong())
     }

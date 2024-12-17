@@ -449,12 +449,14 @@ fun App() {
                                 try {
                                     for (port in portValues) {
                                         if (Url.isNotEmpty() && port.isNotEmpty() && FunctionAlreadySelected.isNotEmpty()) {
-                                            println(Url)
-                                            println(port)
-//                                            val configuration = DestinationServerConfig(Url, port.toInt())
-//                                            SetUserConfigurationChannel.destinationServerAddress.send(configuration)
+//                                            println(Url)
+//                                            println(port)
+                                            val configuration = DestinationServerConfig(Url, port.toInt())
+                                            SetUserConfigurationChannel.destinationServerAddress.send(configuration)
                                             if (LatencyParam.isNotEmpty()) {
                                                 println(LatencyParam)
+                                                val param = AppliedNetworkAction("latency", LatencyParam.toInt())
+                                                SetUserConfigurationChannel.appliedNetworkAction.send(param)
                                             }
                                             if (PackageLossEnabled) {
                                                 println(PackageLossEnabled)
