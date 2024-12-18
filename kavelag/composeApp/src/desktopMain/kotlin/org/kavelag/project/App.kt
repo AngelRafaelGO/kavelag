@@ -24,38 +24,38 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import kavelag.composeapp.generated.resources.Res
-import kavelag.composeapp.generated.resources.logo
 import kotlinx.coroutines.*
-import org.jetbrains.compose.resources.painterResource
 
 
 @Composable
 @Preview
 fun App() {
-    val clientScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     var Url by remember { mutableStateOf("") }
     val portValues = remember { mutableStateListOf<String>().apply { repeat(1) { add("") } } }
     var LatencyParam by remember { mutableStateOf("") }
     var PackageLossEnabled by remember { mutableStateOf(false) }
     var NetworkErrorEnabled by remember { mutableStateOf(false) }
+
+
+    val clientScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     var number by remember { mutableStateOf(1) }
-    var showPortLengthError by remember { mutableStateOf(false) }
-    var showSendError by remember { mutableStateOf(false) }
     var isProxyRunning by remember { mutableStateOf(false) }
     var FunctionAlreadySelected by remember { mutableStateOf("") }
+
+    var showPortLengthError by remember { mutableStateOf(false) }
+    var showSendError by remember { mutableStateOf(false) }
     var showPopUp by remember { mutableStateOf(false) }
+
     if (showPortLengthError) {
         LaunchedEffect(Unit) {
-            delay(3000) // Attendre 3 secondes
-            showPortLengthError = false // Masquer le message après le délai
+            delay(3000)
+            showPortLengthError = false
         }
     }
-
     if (showSendError) {
         LaunchedEffect(Unit) {
-            delay(3000) // Attendre 3 secondes
-            showSendError = false // Masquer le message après le délai
+            delay(3000)
+            showSendError = false
         }
     }
     LaunchedEffect(LatencyParam) {
@@ -72,9 +72,8 @@ fun App() {
         Column(
             Modifier
                 .fillMaxWidth(),
-            horizontalAlignment = Alignment.Start // Aligner la colonne à gauche
+            horizontalAlignment = Alignment.Start
         ) {
-            // Row pour afficher l'image et le texte à gauche
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -83,25 +82,18 @@ fun App() {
 
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Image(
-                    painter = painterResource(Res.drawable.logo),
-                    contentDescription = "Une image exemple",
-                    modifier = Modifier
-                        .size(40.dp) // Ajuster la taille de l'image
-                        .padding(end = 8.dp) // Espace entre l'image et le texte
-                )
                 Spacer(modifier = Modifier.weight(1f))
                 Box(
                     modifier = Modifier
-                        .size(20.dp) // Taille personnalisée du bouton
+                        .size(20.dp)
                         .background(Color.DarkGray, shape = RoundedCornerShape(4.dp))
                         .clickable(onClick = { showPopUp = true }),
-                    contentAlignment = Alignment.Center // Centre l'icône dans la Box
+                    contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Question_mark,
                         contentDescription = "Question Mark Icon",
-                        tint = Color.White // vous pouvez maintenant passer une couleur personnalisée ici
+                        tint = Color.White
                     )
                 }
                 Spacer(modifier = Modifier.width(20.dp))
@@ -116,49 +108,58 @@ fun App() {
                 }
                 Column(
                     Modifier
-                        .fillMaxWidth(0.55f) // Largeur fixe de 400 dp
+                        .fillMaxWidth(0.55f)
                         .fillMaxHeight()
                         .padding(10.dp),
-                    horizontalAlignment = Alignment.Start // Aligner la colonne à gauche
-                ) {            // Vous pouvez ajouter d'autres éléments à la colonne
+                    horizontalAlignment = Alignment.Start
+                ) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f)
                             .border(0.5.dp, Color.Gray, shape = RoundedCornerShape(5.dp))
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                        ) {
-                            Box(
+                        Column() {
+                            Row(
                                 modifier = Modifier
-                                    .width(60.dp)
-                                    .height(18.dp)
-                                    .background(Color.Blue, shape = RoundedCornerShape(topStart = 5.dp)),
-                                contentAlignment = Alignment.Center
+                                    .fillMaxWidth(),
                             ) {
-                                Text(
-                                    text = "Request",
-                                    color = Color.White,
-                                    fontSize = 10.sp,
-                                    lineHeight = 12.sp,
-                                )
+                                Box(
+                                    modifier = Modifier
+                                        .width(60.dp)
+                                        .height(18.dp)
+                                        .background(Color.Blue, shape = RoundedCornerShape(topStart = 5.dp)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "Request",
+                                        color = Color.White,
+                                        fontSize = 10.sp,
+                                        lineHeight = 12.sp,
+                                    )
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .width(40.dp)
+                                        .height(18.dp)
+                                        .background(Color.Green),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "Get",
+                                        color = Color.White,
+                                        fontSize = 10.sp,
+                                        lineHeight = 12.sp,
+                                    )
+                                }
                             }
-                            Box(
-                                modifier = Modifier
-                                    .width(40.dp)
-                                    .height(18.dp)
-                                    .background(Color.Green),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "Get",
-                                    color = Color.White,
-                                    fontSize = 10.sp,
-                                    lineHeight = 12.sp,
-                                )
-                            }
+                            Text(
+                                text = "On sait depuis longtemps que travailler avec du texte lisible et contenant du sens est source de distractions, et empêche de se concentrer sur la mise en page elle-même. L'avantage du Lorem Ipsum sur un texte générique comme 'Du texte. Du texte. Du texte.' est qu'il possède une distribution de lettres plus ou moins normale, et en tout cas comparable avec celle du français standard. De nombreuses suites logicielles de mise en page ou éditeurs de sites Web ont fait du Lorem Ipsum leur faux texte par défaut, et une recherche pour 'Lorem Ipsum' vous conduira vers de nombreux sites qui n'en sont encore qu'à leur phase de construction. Plusieurs versions sont apparues avec le temps, parfois par accident, souvent intentionnellement (histoire d'y rajouter de petits clins d'oeil, voire des phrases embarassantes).",
+                                color = Color.DarkGray,
+                                fontSize = 10.sp,
+                                fontStyle = FontStyle.Italic,
+                                lineHeight = 12.sp,
+                            )
                         }
                     }
                     Spacer(modifier = Modifier.height(3.dp))
@@ -168,38 +169,47 @@ fun App() {
                             .weight(1f)
                             .border(0.5.dp, Color.Gray, shape = RoundedCornerShape(5.dp))
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                        ) {
-                            Box(
+                        Column() {
+                            Row(
                                 modifier = Modifier
-                                    .width(60.dp)
-                                    .height(18.dp)
-                                    .background(Color.Blue, shape = RoundedCornerShape(topStart = 5.dp)),
-                                contentAlignment = Alignment.Center
+                                    .fillMaxWidth(),
                             ) {
-                                Text(
-                                    text = "Response",
-                                    color = Color.White,
-                                    fontSize = 10.sp,
-                                    lineHeight = 12.sp,
-                                )
+                                Box(
+                                    modifier = Modifier
+                                        .width(60.dp)
+                                        .height(18.dp)
+                                        .background(Color.Blue, shape = RoundedCornerShape(topStart = 5.dp)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "Response",
+                                        color = Color.White,
+                                        fontSize = 10.sp,
+                                        lineHeight = 12.sp,
+                                    )
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .width(40.dp)
+                                        .height(18.dp)
+                                        .background(Color.Green),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "Get",
+                                        color = Color.White,
+                                        fontSize = 10.sp,
+                                        lineHeight = 12.sp,
+                                    )
+                                }
                             }
-                            Box(
-                                modifier = Modifier
-                                    .width(40.dp)
-                                    .height(18.dp)
-                                    .background(Color.Green),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "Get",
-                                    color = Color.White,
-                                    fontSize = 10.sp,
-                                    lineHeight = 12.sp,
-                                )
-                            }
+                            Text(
+                                text = "On sait depuis longtemps que travailler avec du texte lisible et contenant du sens est source de distractions, et empêche de se concentrer sur la mise en page elle-même. L'avantage du Lorem Ipsum sur un texte générique comme 'Du texte. Du texte. Du texte.' est qu'il possède une distribution de lettres plus ou moins normale, et en tout cas comparable avec celle du français standard. De nombreuses suites logicielles de mise en page ou éditeurs de sites Web ont fait du Lorem Ipsum leur faux texte par défaut, et une recherche pour 'Lorem Ipsum' vous conduira vers de nombreux sites qui n'en sont encore qu'à leur phase de construction. Plusieurs versions sont apparues avec le temps, parfois par accident, souvent intentionnellement (histoire d'y rajouter de petits clins d'oeil, voire des phrases embarassantes).",
+                                color = Color.DarkGray,
+                                fontSize = 10.sp,
+                                fontStyle = FontStyle.Italic,
+                                lineHeight = 12.sp,
+                            )
                         }
                     }
                 }
@@ -209,27 +219,26 @@ fun App() {
                         .fillMaxHeight(1f)
                         .background(Color(0xFFF8F8F8))
                         .verticalScroll(rememberScrollState()),
-                    horizontalAlignment = Alignment.CenterHorizontally // Aligne tous les enfants de la colonne horizontalement
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
                         text = "Host",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 16.dp, top = 10.dp) // Ajoute un espace en dessous
+                        modifier = Modifier.padding(bottom = 16.dp, top = 10.dp)
                     )
                     Column(
                         Modifier
                             .padding(start = 10.dp)
                             .fillMaxWidth(),
-                        horizontalAlignment = Alignment.Start // Aligne tous les enfants de la colonne horizontalement
+                        horizontalAlignment = Alignment.Start
                     ) {
                         Box(
                             modifier = Modifier
-                                .fillMaxWidth(), // Remplir toute la largeur disponible
-                            // Centrer le contenu à l'intérieur de la Box
+                                .fillMaxWidth(),
                         ) {
                             Row(
-                                verticalAlignment = Alignment.CenterVertically // Centre verticalement les éléments du Row
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
                                     text = "Url",
@@ -237,14 +246,14 @@ fun App() {
                                     modifier = Modifier
                                         .padding(end = 10.dp, bottom = 2.dp)
                                         .fillMaxWidth(0.1f)
-
                                 )
                                 CustomTextField(
-                                    value = Url, // Passe l'état actuel
+                                    value = Url,
                                     onValueChange = { newValue ->
-                                        Url = newValue // Met à jour l'état lorsque le texte change
+                                        Url = newValue
                                     },
                                     enabled = !isProxyRunning,
+                                    typeNumber = false,
                                     leadingIcon = null,
                                     trailingIcon = null,
                                     modifier = Modifier
@@ -252,8 +261,8 @@ fun App() {
                                             MaterialTheme.colors.surface,
                                         )
                                         .border(0.5.dp, Color.Gray, shape = RoundedCornerShape(3.dp))
-                                        .fillMaxWidth(0.85f) // Largeur fixe du champ texte
-                                        .height(22.dp), // Hauteur fixe pour un bon rendu
+                                        .fillMaxWidth(0.85f)
+                                        .height(22.dp),
                                     fontSize = 14.sp,
                                     placeholderText = "..."
                                 )
@@ -262,7 +271,7 @@ fun App() {
                         }
 
                         Row(
-                            verticalAlignment = Alignment.CenterVertically // Centre verticalement les éléments du Row
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
                                 text = "Port",
@@ -273,24 +282,23 @@ fun App() {
 
                             )
                             repeat(number) { index ->
-                                // Commence une nouvelle ligne pour chaque 3 éléments
                                 if (index % 3 == 0) {
                                     Row(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .padding(end = 10.dp),
-                                        horizontalArrangement = Arrangement.SpaceBetween // Espacement uniforme entre les éléments
+                                        horizontalArrangement = Arrangement.SpaceBetween
                                     ) {
-                                        // Ajout des éléments de la ligne
                                         for (i in 0 until 3) {
                                             if (index + i < number) {
                                                 CustomTextField(
-                                                    value = portValues[index + i], // Passe l'état actuel
+                                                    value = portValues[index + i],
                                                     onValueChange = { newValue ->
                                                         portValues[index + i] =
-                                                            newValue // Met à jour l'état lorsque le texte change
+                                                            newValue
                                                     },
                                                     enabled = !isProxyRunning,
+                                                    typeNumber = true,
                                                     leadingIcon = null,
                                                     trailingIcon = null,
                                                     modifier = Modifier
@@ -298,20 +306,20 @@ fun App() {
                                                             MaterialTheme.colors.surface,
                                                         )
                                                         .border(0.5.dp, Color.Gray, shape = RoundedCornerShape(3.dp))
-                                                        .weight(1f) // Largeur proportionnelle // Espacement latéral
-                                                        .height(22.dp), // Hauteur fixe pour un bon rendu
+                                                        .weight(1f)
+                                                        .height(22.dp),
                                                     fontSize = 14.sp,
                                                     placeholderText = "..."
                                                 )
                                             } else {
-                                                Spacer(modifier = Modifier.weight(1f)) // Ajout d'un espace vide si pas assez d'éléments
+                                                Spacer(modifier = Modifier.weight(1f))
                                             }
                                         }
                                         Spacer(modifier = Modifier.width(20.dp))
                                         if (number != 1) {
                                             Box(
                                                 modifier = Modifier
-                                                    .size(20.dp) // Taille personnalisée du bouton
+                                                    .size(20.dp)
                                                     .background(
                                                         if (!isProxyRunning) {
                                                             Color.DarkGray
@@ -319,7 +327,7 @@ fun App() {
                                                             Color.Gray
                                                         },
                                                         shape = RoundedCornerShape(4.dp)
-                                                    ) // Fond carré
+                                                    )
                                                     .clickable {
                                                         if (!isProxyRunning) {
                                                             number--;
@@ -330,13 +338,13 @@ fun App() {
                                                         }
                                                     },
 
-                                                contentAlignment = Alignment.Center // Centre l'icône dans la Box
+                                                contentAlignment = Alignment.Center
                                             ) {
                                                 Icon(
                                                     imageVector = Icons.Filled.Delete,
                                                     contentDescription = "Delete icon",
-                                                    tint = Color.White, // Couleur de l'icône en blanc
-                                                    modifier = Modifier.size(12.dp) // Taille de l'icône
+                                                    tint = Color.White,
+                                                    modifier = Modifier.size(12.dp)
                                                 )
                                             }
                                         }
@@ -347,14 +355,14 @@ fun App() {
                     }
                     Box(
                         modifier = Modifier
-                            .size(20.dp) // Taille personnalisée du bouton
+                            .size(20.dp)
                             .background(
                                 if (!isProxyRunning) {
                                     Color.DarkGray
                                 } else {
                                     Color.Gray
                                 }, shape = RoundedCornerShape(4.dp)
-                            ) // Fond carré
+                            )
                             .clickable {
                                 if (!isProxyRunning) {
                                     if (number < 3) {
@@ -365,13 +373,13 @@ fun App() {
                                     }
                                 }
                             },
-                        contentAlignment = Alignment.Center // Centre l'icône dans la Box
+                        contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Add,
                             contentDescription = "Add icon",
-                            tint = Color.White, // Couleur de l'icône en blanc
-                            modifier = Modifier.size(12.dp) // Taille de l'icône
+                            tint = Color.White,
+                            modifier = Modifier.size(12.dp)
                         )
                     }
                     if (showPortLengthError) {
@@ -386,46 +394,46 @@ fun App() {
 
                     Divider(
                         modifier = Modifier
-                            .padding(vertical = 25.dp) // Espacement au-dessus et en dessous du Divider
-                            .fillMaxWidth(0.5f) // Le Divider prend 80% de la largeur
-                            .height(1.dp), // Hauteur du Divider
-                        color = Color.Gray // Vous pouvez ajuster la couleur
+                            .padding(vertical = 25.dp)
+                            .fillMaxWidth(0.5f)
+                            .height(1.dp),
+                        color = Color.Gray
                     )
 
                     Text(
                         text = "Function",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 16.dp) // Ajoute un espace en dessous
+                        modifier = Modifier.padding(bottom = 16.dp)
                     )
 
                     FunctionBox(
                         "Latency",
                         FunctionAlreadySelected,
                         isProxyRunning,
-                        value = LatencyParam, // Passe l'état actuel
+                        value = LatencyParam,
                         onValueChange = { newValue ->
-                            LatencyParam = newValue // Met à jour l'état lorsque le texte change
+                            LatencyParam = newValue
                         },
                     )
                     FunctionBox(
                         "Package Loss",
                         FunctionAlreadySelected,
                         isProxyRunning,
-                        valueBool = PackageLossEnabled, // Passe l'état actuel
+                        valueBool = PackageLossEnabled,
                         onValueBoolChange = {
-                            PackageLossEnabled = !PackageLossEnabled // Met à jour l'état lorsque le texte change
+                            PackageLossEnabled = !PackageLossEnabled
                         },
                     )
                     FunctionBox("Network Error",
                         FunctionAlreadySelected,
                         isProxyRunning,
-                        valueBool = NetworkErrorEnabled, // Passe l'état actuel
+                        valueBool = NetworkErrorEnabled,
                         onValueBoolChange = {
                             NetworkErrorEnabled = !NetworkErrorEnabled
                         })
 
-                    Spacer(modifier = Modifier.height(20.dp)) // Espacement avant le bouton
+                    Spacer(modifier = Modifier.height(20.dp))
                     if (showSendError) {
                         Text(
                             text = "Error missing arguments check if \"Url\" \"Port\" and \"Function\" are filled ",
@@ -440,8 +448,8 @@ fun App() {
                     }
                     Button(
                         colors = ButtonDefaults.buttonColors(
-                            backgroundColor = if (isProxyRunning) Color.Red else Color.DarkGray, // Change la couleur selon l'état
-                            contentColor = Color.White // Couleur du texte ou du contenu
+                            backgroundColor = if (isProxyRunning) Color.Red else Color.DarkGray,
+                            contentColor = Color.White
                         ),
                         onClick = {
 
@@ -452,8 +460,8 @@ fun App() {
                                             try {
                                                 println(Url)
                                                 println(portValues)
-                                            val configuration = DestinationServerConfig(Url, portValues[0].toInt())
-                                            SetUserConfigurationChannel.destinationServerAddress.send(configuration)
+                                                val configuration = DestinationServerConfig(Url, portValues[0].toInt())
+                                                SetUserConfigurationChannel.destinationServerAddress.send(configuration)
                                                 if (LatencyParam.isNotEmpty()) {
                                                     val param = AppliedNetworkAction("latency", LatencyParam.toInt())
                                                     SetUserConfigurationChannel.appliedNetworkAction.send(param)
@@ -481,11 +489,11 @@ fun App() {
                         },
                         modifier = Modifier
                             .padding(16.dp)
-                            .fillMaxWidth(0.5f), // Le bouton occupe 50% de la largeur
+                            .fillMaxWidth(0.5f),
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(
-                            text = if (isProxyRunning) "Stop Proxy" else "Start Proxy", // Change le texte selon l'état
+                            text = if (isProxyRunning) "Stop Proxy" else "Start Proxy",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -541,10 +549,10 @@ fun FunctionBox(
     name: String,
     FunctionAlreadySelected: String,
     isProxyRunning: Boolean,
-    value: String? = null, // Optional parameter
-    onValueChange: ((String) -> Unit)? = null, // Optional parameter
-    valueBool: Boolean? = null, // Optional parameter
-    onValueBoolChange: ((Boolean) -> Unit)? = null // Optional parameter
+    value: String? = null,
+    onValueChange: ((String) -> Unit)? = null,
+    valueBool: Boolean? = null,
+    onValueBoolChange: ((Boolean) -> Unit)? = null
 ) {
     val expandedState = remember { mutableStateOf(false) }
     LaunchedEffect(FunctionAlreadySelected) {
@@ -590,8 +598,6 @@ fun FunctionBox(
             }
         }
     }
-
-    // Expanded Content
     if (expandedState.value) {
         Box(
             modifier = Modifier
@@ -613,9 +619,10 @@ fun FunctionBox(
                     )
 
                     CustomTextField(
-                        value = value, // Use value here
-                        onValueChange = onValueChange, // Pass callback
+                        value = value,
+                        onValueChange = onValueChange,
                         enabled = !isProxyRunning && (FunctionAlreadySelected == name || FunctionAlreadySelected == ""),
+                        typeNumber = true,
                         modifier = Modifier
                             .background(MaterialTheme.colors.surface)
                             .border(0.5.dp, Color.Gray, RoundedCornerShape(3.dp))
@@ -625,7 +632,6 @@ fun FunctionBox(
                         placeholderText = ""
                     )
                 } else if ((name == "Package Loss" || name == "Network Error") && valueBool != null && onValueBoolChange != null) {
-                    // Checkbox UI
                     Checkbox(
                         checked = valueBool,
                         onCheckedChange = onValueBoolChange,
@@ -647,9 +653,10 @@ fun FunctionBox(
 
 @Composable
 fun CustomTextField(
-    value: String, // La valeur vient du parent
+    value: String,
     onValueChange: (String) -> Unit,
     enabled: Boolean = true,
+    typeNumber: Boolean,
     modifier: Modifier = Modifier,
     leadingIcon: (@Composable () -> Unit)? = null,
     trailingIcon: (@Composable () -> Unit)? = null,
@@ -665,7 +672,11 @@ fun CustomTextField(
             .fillMaxWidth(),
         enabled = enabled,
         value = value,
-        onValueChange = onValueChange,
+        onValueChange = { input ->
+            if (!typeNumber || input.all { it.isDigit() }) {
+                onValueChange(input)
+            }
+        },
         singleLine = true,
         cursorBrush = SolidColor(MaterialTheme.colors.primary),
         textStyle = LocalTextStyle.current.copy(
