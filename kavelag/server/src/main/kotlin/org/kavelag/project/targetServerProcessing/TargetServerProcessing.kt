@@ -10,6 +10,7 @@ import org.kavelag.project.models.HttpRequest
 suspend fun callTargetServer(destinationURL: String, destinationPort: Int, httpRequest: HttpRequest) {
     when (httpRequest.method) {
         "GET" -> getMethod(destinationURL, destinationPort, httpRequest)
+        "POST" -> postMethod(destinationURL, destinationPort, httpRequest)
     }
 
 }
@@ -29,6 +30,25 @@ suspend fun getMethod(destinationURL: String, destinationPort: Int, httpRequest:
     return httpClient.get("${destinationURL}:${destinationPort}${httpRequest.requestedResource}")
 }
 
-//suspend fun postMethod(destinationURL: String, destinationPort: Int, httpRequest: HttpRequest): HttpResponse{
-//
-//}
+suspend fun postMethod(destinationURL: String, destinationPort: Int, httpRequest: HttpRequest): HttpResponse {
+    runCatching {
+        val headers = httpRequest.headers
+        val body = httpRequest.body
+        if (headers.isNotEmpty()) {
+            println("callTargetServer: method POST: ${httpRequest.body}")
+            return httpClient.get("${destinationURL}:${destinationPort}${httpRequest.requestedResource}") {
+                headers {
+                    httpRequest.headers.forEach { (key, value) ->
+                        append(key, value)
+                    }
+                    setBody(body)
+                }
+            }
+        }
+    }.onFailure {
+        println("Error while sending POST request: ${it.message}")
+    }.getOrNull()
+    return httpClient.get("${destinationURL}:${destinationPort}${httpRequest.requestedResource}") {
+        setBody(body)
+    }
+}

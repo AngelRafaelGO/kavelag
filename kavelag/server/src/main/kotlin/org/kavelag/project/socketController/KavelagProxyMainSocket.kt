@@ -24,10 +24,7 @@ object KavelagProxyMainSocket {
                         try {
                             val parsedRequest =
                                 parseIncomingHttpRequest(socket.openReadChannel().readRemaining().readText())
-                            var networkIssue = networkIssueSelector()
-                            networkIssue
-
-                            if(networkIssue)
+                            networkIssueSelector()
                             callTargetServer(destinationURL, destinationPort, parsedRequest)
                             // TODO: handle destination server response
                             // TODO: forward response to client
