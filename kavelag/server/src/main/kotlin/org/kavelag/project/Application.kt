@@ -6,6 +6,7 @@ import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import kotlinx.coroutines.*
+import org.kavelag.project.plugins.configureSerialization
 import org.kavelag.project.socketController.KavelagProxyMainSocket
 
 val httpClient = HttpClient(CIO)
@@ -24,6 +25,7 @@ fun startServer() {
 }
 
 fun Application.module() {
+    configureSerialization()
 }
 
 suspend fun listenForConfiguration() {
