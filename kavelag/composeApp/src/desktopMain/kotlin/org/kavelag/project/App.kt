@@ -511,13 +511,21 @@ private fun PopUpHelp(onDismiss: () -> Unit) {
                     .fillMaxWidth()
             ) {
                 Text(
-                    text = "Notice d'utilisation de Kavelag:",
+                    text = "User Manual for Kavelag:",
                     fontSize = 18.sp,
                     fontStyle = FontStyle.Italic,
                     modifier = Modifier.padding(bottom = 2.dp)
                 )
                 Text(
-                    text = "Connecter votre application (Client) a notre proxy via une requête à cette adresse : \"http://localhost:8080/\" \n\nPar la suite remplisser sur l'interface Kavelag les champs suivant : Url, Port et la fonctionalité souhaité. \n\nIl y a plusieurs type de fonctionalités : \n -Latency: Qui simule une latence réseau sur le chemin de votre requête.\n -Package Loss: qui simule une perte de packet lors de la reception de la requête.\n -Network Error: qui simule une perte de réseau total durant le chemin retour de la requête.",
+                    text = "Connect your application (Client) to our proxy by making a request to the following address: \"http://localhost:8080/\"\n" +
+                            "\n" +
+                            "Next, fill in the following fields on the Kavelag interface: URL, Port, and the desired functionality.\n" +
+                            "\n" +
+                            "There are several types of functionalities:\n" +
+                            "\n" +
+                            "- Latency: Simulates network latency on the path of your request.\n" +
+                            "- Packet Loss: Simulates packet loss during the reception of the request.\n" +
+                            "- Network Error: Simulates total network loss during the return path of the request.",
                     fontSize = 13.sp,
                     fontStyle = FontStyle.Italic,
                     modifier = Modifier.padding(bottom = 8.dp)
@@ -666,8 +674,10 @@ fun CustomTextField(
         ),
         decorationBox = { innerTextField ->
             Row(
-                modifier,
+                modifier = Modifier
+                    .padding(start = 5.dp),
                 verticalAlignment = Alignment.CenterVertically
+
             ) {
                 if (leadingIcon != null) leadingIcon()
 
