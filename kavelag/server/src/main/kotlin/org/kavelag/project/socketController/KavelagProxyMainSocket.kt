@@ -25,7 +25,6 @@ object KavelagProxyMainSocket {
                             val parsedRequest =
                                 parseIncomingHttpRequest(socket.openReadChannel().readRemaining().readText())
                             networkIssueSelector()
-                            // TODO: send request to destination server
                             callTargetServer(destinationURL, destinationPort, parsedRequest)
                             // TODO: handle destination server response
                             // TODO: forward response to client
