@@ -452,9 +452,11 @@ fun App() {
                                             try {
                                                 println(Url)
                                                 println(portValues)
-//                                            val configuration = DestinationServerConfig(Url, portValues)
-//                                            SetUserConfigurationChannel.destinationServerAddress.send(configuration)
+                                            val configuration = DestinationServerConfig(Url, portValues[0].toInt())
+                                            SetUserConfigurationChannel.destinationServerAddress.send(configuration)
                                                 if (LatencyParam.isNotEmpty()) {
+                                                    val param = AppliedNetworkAction("latency", LatencyParam.toInt())
+                                                    SetUserConfigurationChannel.appliedNetworkAction.send(param)
                                                     println(LatencyParam)
                                                 }
                                                 if (PackageLossEnabled) {
