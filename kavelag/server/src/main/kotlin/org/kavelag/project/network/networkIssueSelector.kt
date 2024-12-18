@@ -11,6 +11,8 @@ suspend fun networkIssueSelector(){
     println("networkIssueSelector::action: $action, param: $param")
     when(action){
         "latency" -> networkLatency(param.toLong())
+        "noNetwork" -> null
+
     }
 }
 
