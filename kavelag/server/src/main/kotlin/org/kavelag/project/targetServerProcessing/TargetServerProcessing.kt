@@ -15,40 +15,41 @@ suspend fun callTargetServer(destinationURL: String, destinationPort: Int, httpR
 
 }
 
-suspend fun getMethod(destinationURL: String, destinationPort: Int, httpRequest: HttpRequest): HttpResponse {
-    val headers = httpRequest.headers
-    if (headers.isNotEmpty()) {
-        println("callTargetServer: method GET: ${httpRequest.headers}")
-        return httpClient.get("${destinationURL}:${destinationPort}${httpRequest.requestedResource}") {
-            headers {
-                httpRequest.headers.forEach { (key, value) ->
-                    append(key, value)
-                }
-            }
-        }
-    }
-    return httpClient.get("${destinationURL}:${destinationPort}${httpRequest.requestedResource}")
-}
-
-suspend fun postMethod(destinationURL: String, destinationPort: Int, httpRequest: HttpRequest): HttpResponse {
+suspend fun getMethod(destinationURL: String, destinationPort: Int, httpRequest: HttpRequest) {
     runCatching {
-        val headers = httpRequest.headers
-        val body = httpRequest.body
-        if (headers.isNotEmpty()) {
-            println("callTargetServer: method POST: ${httpRequest.body}")
-            return httpClient.get("${destinationURL}:${destinationPort}${httpRequest.requestedResource}") {
-                headers {
-                    httpRequest.headers.forEach { (key, value) ->
-                        append(key, value)
-                    }
-                    setBody(body)
-                }
-            }
-        }
+        requestBuilder(destinationURL, destinationPort, httpRequest, HttpMethod.Get)
     }.onFailure {
         println("Error while sending POST request: ${it.message}")
     }.getOrNull()
-    return httpClient.get("${destinationURL}:${destinationPort}${httpRequest.requestedResource}") {
-        setBody(body)
+}
+
+suspend fun postMethod(destinationURL: String, destinationPort: Int, httpRequest: HttpRequest) {
+    runCatching {
+        requestBuilder(destinationURL, destinationPort, httpRequest, HttpMethod.Post)
+    }.onFailure {
+        println("Error while sending POST request: ${it.message}")
+    }.getOrNull()
+}
+
+suspend fun requestBuilder(
+    destinationURL: String,
+    destinationPort: Int,
+    httpRequest: HttpRequest,
+    methodRequested: HttpMethod
+): HttpResponse {
+    val headers = httpRequest.headers
+    val body = httpRequest.body
+
+    return httpClient.request("${destinationURL}:${destinationPort}${httpRequest.requestedResource}") {
+        method = methodRequested
+        if (headers.isNotEmpty())
+            headers {
+                headers.forEach { (key, value) ->
+                    append(key, value)
+                }
+            }
+        if (body != null) {
+            setBody(body)
+        }
     }
 }
