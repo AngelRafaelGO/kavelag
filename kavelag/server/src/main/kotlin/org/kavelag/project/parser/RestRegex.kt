@@ -8,5 +8,5 @@ object RestRegex {
     // The requested resource regex works for requests with or without query params
     val requestedResourceRegex: Regex = "^[A-Z]+\\s([\\/\\w\\.-]*(\\?.*)?)\\sHTTP/".toRegex()
     val methodRegex: Regex = "^[A-Z]+".toRegex()
-    val bodyRegex: Regex = "(?s)\\r\\n\\r\\n(.*)".toRegex()
+    val bodyRegex: Regex = "(?s)\\r\\n\\r\\n(.+)".toRegex()
 }

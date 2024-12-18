@@ -23,7 +23,6 @@ fun extractRequestedResourcePath(httpRequest: String): String? =
 
 
 fun extractBody(httpRequest: String): String? {
-    println(httpRequest)
     val result = RestRegex.bodyRegex.find(httpRequest)
     if (result != null) {
         val body = result.groups[1]?.value
