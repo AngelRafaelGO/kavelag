@@ -29,6 +29,7 @@ import org.kavelag.project.models.AppliedNetworkAction
 import org.kavelag.project.models.ProxySocketConfiguration
 
 
+
 @Composable
 @Preview
 fun App(appScope: CoroutineScope) {
@@ -47,6 +48,16 @@ fun App(appScope: CoroutineScope) {
     var showPortLengthError by remember { mutableStateOf(false) }
     var showSendError by remember { mutableStateOf(false) }
     var showPopUp by remember { mutableStateOf(false) }
+
+    val requests = remember { mutableStateListOf<String>() }
+
+    suspend fun listenerForRequests(){
+        for(request in SetUserConfigurationChannel.incomingHttpData){
+            requests.add(request.httpIncomingData)
+        }
+    }
+
+
 
     if (showPortLengthError) {
         LaunchedEffect(Unit) {
@@ -156,17 +167,19 @@ fun App(appScope: CoroutineScope) {
                                 }
                             }
                             Spacer(modifier = Modifier.height(10.dp))
-                            Text(
-                                text = "On sait depuis longtemps que travailler avec du texte lisible et contenant du sens est source de distractions, et empêche de se concentrer sur la mise en page elle-même. L'avantage du Lorem Ipsum sur un texte générique comme 'Du texte. Du texte. Du texte.' est qu'il possède une distribution de lettres plus ou moins normale, et en tout cas comparable avec celle du français standard. De nombreuses suites logicielles de mise en page ou éditeurs de sites Web ont fait du Lorem Ipsum leur faux texte par défaut, et une recherche pour 'Lorem Ipsum' vous conduira vers de nombreux sites qui n'en sont encore qu'à leur phase de construction. Plusieurs versions sont apparues avec le temps, parfois par accident, souvent intentionnellement (histoire d'y rajouter de petits clins d'oeil, voire des phrases embarassantes).On sait depuis longtemps que travailler avec du texte lisible et contenant du sens est source de distractions, et empêche de se concentrer sur la mise en page elle-même. L'avantage du Lorem Ipsum sur un texte générique comme 'Du texte. Du texte. Du texte.' est qu'il possède une distribution de lettres plus ou moins normale, et en tout cas comparable avec celle du français standard. De nombreuses suites logicielles de mise en page ou éditeurs de sites Web ont fait du Lorem Ipsum leur faux texte par défaut, et une recherche pour 'Lorem Ipsum' vous conduira vers de nombreux sites qui n'en sont encore qu'à leur phase de construction. Plusieurs versions sont apparues avec le temps, parfois par accident, souvent intentionnellement (histoire d'y rajouter de petits clins d'oeil, voire des phrases embarassantes).On sait depuis longtemps que travailler avec du texte lisible et contenant du sens est source de distractions, et empêche de se concentrer sur la mise en page elle-même. L'avantage du Lorem Ipsum sur un texte générique comme 'Du texte. Du texte. Du texte.' est qu'il possède une distribution de lettres plus ou moins normale, et en tout cas comparable avec celle du français standard. De nombreuses suites logicielles de mise en page ou éditeurs de sites Web ont fait du Lorem Ipsum leur faux texte par défaut, et une recherche pour 'Lorem Ipsum' vous conduira vers de nombreux sites qui n'en sont encore qu'à leur phase de construction. Plusieurs versions sont apparues avec le temps, parfois par accident, souvent intentionnellement (histoire d'y rajouter de petits clins d'oeil, voire des phrases embarassantes).On sait depuis longtemps que travailler avec du texte lisible et contenant du sens est source de distractions, et empêche de se concentrer sur la mise en page elle-même. L'avantage du Lorem Ipsum sur un texte générique comme 'Du texte. Du texte. Du texte.' est qu'il possède une distribution de lettres plus ou moins normale, et en tout cas comparable avec celle du français standard. De nombreuses suites logicielles de mise en page ou éditeurs de sites Web ont fait du Lorem Ipsum leur faux texte par défaut, et une recherche pour 'Lorem Ipsum' vous conduira vers de nombreux sites qui n'en sont encore qu'à leur phase de construction. Plusieurs versions sont apparues avec le temps, parfois par accident, souvent intentionnellement (histoire d'y rajouter de petits clins d'oeil, voire des phrases embarassantes).",
-                                color = Color.DarkGray,
-                                fontSize = 10.sp,
-                                fontStyle = FontStyle.Italic,
-                                lineHeight = 12.sp,
-                                modifier = Modifier
-                                    .fillMaxHeight(0.95f)
-                                    .verticalScroll(rememberScrollState())
-                                    .padding(start = 10.dp, end = 10.dp),
-                            )
+                         for (request in requests){
+                             Text(
+                                 text = request,
+                                 color = Color.DarkGray,
+                                 fontSize = 10.sp,
+                                 fontStyle = FontStyle.Italic,
+                                 lineHeight = 12.sp,
+                                 modifier = Modifier
+                                     .fillMaxHeight(0.05f)
+                                     .verticalScroll(rememberScrollState())
+                                     .padding(start = 10.dp, end = 10.dp),
+                             )
+                         }
                         }
                     }
                     Spacer(modifier = Modifier.height(3.dp))
@@ -479,6 +492,7 @@ fun App(appScope: CoroutineScope) {
                                                         startServer(proxySocketConfiguration)
                                                     }
                                                 }
+                                                listenerForRequests()
                                                 if (PackageLossEnabled) {
                                                     println(PackageLossEnabled)
                                                 }
@@ -496,28 +510,11 @@ fun App(appScope: CoroutineScope) {
                                 } else {
                                     showSendError = true
                                 }
-                            } else
+                            } else {
                                 isProxyRunning = !isProxyRunning
-                        },
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .fillMaxWidth(0.5f),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text(
-                            text = if (isProxyRunning) "Stop Proxy" else "Start Proxy",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                    Button(
-                        colors = ButtonDefaults.buttonColors(
-                            backgroundColor = if (isProxyRunning) Color.Red else Color.DarkGray,
-                            contentColor = Color.White
-                        ),
-                        onClick = {
-                            runBlocking {
-                                stopServer()
+                                runBlocking {
+                                    stopServer()
+                                }
                             }
                         },
                         modifier = Modifier
@@ -526,7 +523,7 @@ fun App(appScope: CoroutineScope) {
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(
-                            text = "Stop Proxy",
+                            text = if (isProxyRunning) "Stop Proxy" else "Start Proxy",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold
                         )

@@ -13,7 +13,6 @@ fun main() = application {
     val kavelagScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     Window(
         onCloseRequest = ::exitApplication,
-//        undecorated = true,
         title = "kavelag",
         icon = painterResource(Res.drawable.logo)
     ) {
