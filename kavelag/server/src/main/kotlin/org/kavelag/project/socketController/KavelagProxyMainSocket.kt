@@ -3,12 +3,15 @@ package org.kavelag.project.socketController
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import org.kavelag.project.HttpDestinationServerResponse
 import org.kavelag.project.HttpIncomingData
 import org.kavelag.project.KAVELAG_PROXY_PORT
-import org.kavelag.project.SetUserConfigurationChannel
+import org.kavelag.project.SetUserConfigurationChannel.destinationServerResponseData
 import org.kavelag.project.SetUserConfigurationChannel.incomingHttpData
-import org.kavelag.project.kavelagScope
 import org.kavelag.project.models.ProxySocketConfiguration
 import org.kavelag.project.network.networkIssueSelector
 import org.kavelag.project.parser.parseIncomingHttpRequest
@@ -35,12 +38,10 @@ object KavelagProxyMainSocket {
                         if (socket != null) {
                             launch(Dispatchers.IO) {
                                 try {
-                                    //TODO: send to the front http request
                                     val incomingHttpRequest = socket.openReadChannel().readRemaining().readText()
                                     launch {
                                         incomingHttpData.send(HttpIncomingData(incomingHttpRequest))
                                     }
-
                                     val parsedRequest =
                                         parseIncomingHttpRequest(incomingHttpRequest)
                                     networkIssueSelector(proxySocketConfiguration.appliedNetworkAction)
@@ -49,9 +50,15 @@ object KavelagProxyMainSocket {
                                         proxySocketConfiguration.port,
                                         parsedRequest
                                     )
-
-
-                                    // TODO: handle destination server response
+                                    if (response != null) {
+                                        launch {
+                                            destinationServerResponseData.send(
+                                                HttpDestinationServerResponse(
+                                                    response
+                                                )
+                                            )
+                                        }
+                                    }
                                     // TODO: forward response to client
                                 } catch (e: Throwable) {
                                     println("Error handling socket: $e")
