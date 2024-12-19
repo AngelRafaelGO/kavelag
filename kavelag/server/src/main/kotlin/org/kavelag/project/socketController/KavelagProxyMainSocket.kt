@@ -26,6 +26,7 @@ object KavelagProxyMainSocket {
                                 parseIncomingHttpRequest(socket.openReadChannel().readRemaining().readText())
                             networkIssueSelector()
                             callTargetServer(destinationURL, destinationPort, parsedRequest)
+                            println("here is the networkIssueSelectorResponse: ${ callTargetServer(destinationURL, destinationPort, parsedRequest)}")
                             // TODO: handle destination server response
                             // TODO: forward response to client
                         } catch (e: Throwable) {
