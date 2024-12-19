@@ -1,35 +1,31 @@
 package org.kavelag.project.network
 
 import kotlinx.coroutines.delay
-import org.kavelag.project.listener.listenerForParams
+import org.kavelag.project.models.AppliedNetworkAction
 
-suspend fun networkIssueSelector(){
-    val paramFromListener = listenerForParams()
-    val action = paramFromListener!!.appliedNetworkAction.lowercase().trim()
-    val param = paramFromListener.params
+suspend fun networkIssueSelector(param: AppliedNetworkAction) {
+    val action = param.appliedNetworkAction.lowercase().trim()
 
     println("networkIssueSelector::action: $action, param: $param")
-    when(action){
-        "latency" -> networkLatency(param.toLong())
-        "noNetwork" -> null
-
+    when (action) {
+        "latency" -> networkLatency(param.params.toLong())
     }
 }
 
-private fun noNetwork(){
+private fun noNetwork() {
     return
     //No request sent
 }
 
-private suspend fun networkLatency(delay: Long){
+private suspend fun networkLatency(delay: Long) {
     delay(delay)
 }
 
-private fun oneRequestFailsOver2(count: Int, requestNumber: Int, failedRequest: Int){
+private fun oneRequestFailsOver2(count: Int, requestNumber: Int, failedRequest: Int) {
     var count2 = count
     count2++
-    if(requestNumber > failedRequest){
-        if(count2 % failedRequest == 0){
+    if (requestNumber > failedRequest) {
+        if (count2 % failedRequest == 0) {
             return println("request can not be sent")
         }
         return println("failed request exceed the number of Request")

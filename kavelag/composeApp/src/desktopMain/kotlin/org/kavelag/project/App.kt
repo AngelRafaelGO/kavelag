@@ -25,11 +25,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import kotlinx.coroutines.*
+import org.kavelag.project.models.AppliedNetworkAction
+import org.kavelag.project.models.ProxySocketConfiguration
 
 
 @Composable
 @Preview
-fun App() {
+fun App(appScope: CoroutineScope) {
     var Url by remember { mutableStateOf("") }
     val portValues = remember { mutableStateListOf<String>().apply { repeat(1) { add("") } } }
     var LatencyParam by remember { mutableStateOf("") }
@@ -462,20 +464,20 @@ fun App() {
                             contentColor = Color.White
                         ),
                         onClick = {
-
                             if (!isProxyRunning) {
                                 if (Url.isNotEmpty() && portValues.isNotEmpty() && FunctionAlreadySelected.isNotEmpty()) {
                                     if (portValues.all { it.isNotEmpty() }) {
                                         clientScope.launch {
                                             try {
-                                                println(Url)
-                                                println(portValues)
-                                                val configuration = DestinationServerConfig(Url, portValues[0].toInt())
-                                                SetUserConfigurationChannel.destinationServerAddress.send(configuration)
                                                 if (LatencyParam.isNotEmpty()) {
-                                                    val param = AppliedNetworkAction("latency", LatencyParam.toInt())
-                                                    SetUserConfigurationChannel.appliedNetworkAction.send(param)
-                                                    println(LatencyParam)
+                                                    val proxySocketConfiguration = ProxySocketConfiguration(
+                                                        Url,
+                                                        portValues[0].toInt(),
+                                                        AppliedNetworkAction("latency", LatencyParam.toInt())
+                                                    )
+                                                    appScope.launch {
+                                                        startServer(proxySocketConfiguration)
+                                                    }
                                                 }
                                                 if (PackageLossEnabled) {
                                                     println(PackageLossEnabled)
@@ -504,6 +506,27 @@ fun App() {
                     ) {
                         Text(
                             text = if (isProxyRunning) "Stop Proxy" else "Start Proxy",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    Button(
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = if (isProxyRunning) Color.Red else Color.DarkGray,
+                            contentColor = Color.White
+                        ),
+                        onClick = {
+                            runBlocking {
+                                stopServer()
+                            }
+                        },
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .fillMaxWidth(0.5f),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = "Stop Proxy",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold
                         )

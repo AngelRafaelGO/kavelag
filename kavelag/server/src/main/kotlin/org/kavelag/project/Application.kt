@@ -6,35 +6,53 @@ import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import kotlinx.coroutines.*
+import org.kavelag.project.models.ProxySocketConfiguration
 import org.kavelag.project.plugins.configureSerialization
 import org.kavelag.project.socketController.KavelagProxyMainSocket
 
 val httpClient = HttpClient(CIO)
+var kavelagScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+private var serverInstance: EmbeddedServer<NettyApplicationEngine, NettyApplicationEngine.Configuration>? = null
 
-fun startServer() {
-    val serverScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-    serverScope.launch {
-        listenForConfiguration()
+fun startServer(proxySocketConfiguration: ProxySocketConfiguration) {
+    if (kavelagScope.coroutineContext[Job]?.isCompleted == true) {
+        kavelagScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     }
-    Runtime.getRuntime().addShutdownHook(Thread {
-        println("Shutting down Kavelag proxy server...")
-        serverScope.cancel()
-    })
-    embeddedServer(Netty, port = SERVER_PORT, host = "0.0.0.0", module = Application::module)
-        .start(wait = true)
+
+    kavelagScope.launch {
+        println("Received user configuration for proxy socket startup: URL=${proxySocketConfiguration.url}, Port=${proxySocketConfiguration.port}")
+        try {
+            KavelagProxyMainSocket.launchProxySocket(proxySocketConfiguration)
+        } catch (e: Exception) {
+            println("Error in Kavelag proxy main socket: $e")
+        }
+    }
+
+    if (serverInstance == null) {
+        val server = embeddedServer(Netty, port = SERVER_PORT, host = "0.0.0.0", module = { module() })
+        server.start(wait = false)
+        serverInstance = server
+    } else {
+        println("Kavelag server is already running.")
+    }
+}
+
+suspend fun stopServer() {
+    try {
+        KavelagProxyMainSocket.stopProxySocket()
+    } catch (e: Exception) {
+        println("Error while stopping proxy socket: $e")
+    }
+
+    serverInstance?.let {
+        it.stop(1000, 2000)
+        serverInstance = null
+    }
+
+    kavelagScope.cancel()
+    println("Kavelag server has been stopped.")
 }
 
 fun Application.module() {
     configureSerialization()
-}
-
-suspend fun listenForConfiguration() {
-    for (config in SetUserConfigurationChannel.destinationServerAddress) {
-        println("Received user configuration for proxy socket start up: URL=${config.url}, Port=${config.port}")
-        try {
-            KavelagProxyMainSocket.launchProxySocket(config.url, config.port)
-        } catch (e: Exception) {
-            println("Error in KavelagProxyMainSocket: ${e.message}")
-        }
-    }
 }
