@@ -169,19 +169,17 @@ fun App(kavelagScope: CoroutineScope) {
                                 }
                             }
                             Spacer(modifier = Modifier.height(10.dp))
-                            for (request in requests) {
-                                Text(
-                                    text = request,
-                                    color = Color.DarkGray,
-                                    fontSize = 10.sp,
-                                    fontStyle = FontStyle.Italic,
-                                    lineHeight = 12.sp,
-                                    modifier = Modifier
-                                        .fillMaxHeight(0.05f)
-                                        .verticalScroll(rememberScrollState())
-                                        .padding(start = 10.dp, end = 10.dp),
-                                )
-                            }
+                            Text(
+                                text = requests.joinToString(separator = "\n"),
+                                color = Color.DarkGray,
+                                fontSize = 10.sp,
+                                fontStyle = FontStyle.Italic,
+                                lineHeight = 12.sp,
+                                modifier = Modifier
+                                    .fillMaxHeight(0.95f)
+                                    .verticalScroll(rememberScrollState())
+                                    .padding(start = 10.dp, end = 10.dp),
+                            )
                         }
                     }
                     Spacer(modifier = Modifier.height(3.dp))
@@ -226,19 +224,18 @@ fun App(kavelagScope: CoroutineScope) {
                                 }
                             }
                             Spacer(modifier = Modifier.height(10.dp))
-                            for (response in responses) {
                                 Text(
-                                    text = response,
+                                    text = responses.joinToString(separator = "\n"),
                                     color = Color.DarkGray,
                                     fontSize = 10.sp,
                                     fontStyle = FontStyle.Italic,
                                     lineHeight = 12.sp,
                                     modifier = Modifier
-                                        .fillMaxHeight(0.05f)
+                                        .fillMaxHeight(0.95f)
                                         .verticalScroll(rememberScrollState())
                                         .padding(start = 10.dp, end = 10.dp),
                                 )
-                            }
+
                         }
                     }
                 }
@@ -493,6 +490,7 @@ fun App(kavelagScope: CoroutineScope) {
                                                         startServer(proxySocketConfiguration)
                                                     }
                                                 }
+                                                isProxyRunning = !isProxyRunning
                                                 listenForRequests()
 
                                                 if (PackageLossEnabled) {
@@ -501,7 +499,6 @@ fun App(kavelagScope: CoroutineScope) {
                                                 if (NetworkErrorEnabled) {
                                                     println(NetworkErrorEnabled)
                                                 }
-                                                isProxyRunning = !isProxyRunning
                                             } catch (e: Exception) {
                                                 println("Error: ${e.message}")
                                             }
@@ -512,8 +509,12 @@ fun App(kavelagScope: CoroutineScope) {
                                 } else {
                                     showSendError = true
                                 }
-                            } else
+                            } else {
                                 isProxyRunning = !isProxyRunning
+                                runBlocking {
+                                    stopServer()
+                                }
+                            }
                             kavelagScope.launch {
                                 listenForResponses()
                             }
