@@ -224,17 +224,17 @@ fun App(kavelagScope: CoroutineScope) {
                                 }
                             }
                             Spacer(modifier = Modifier.height(10.dp))
-                                Text(
-                                    text = responses.joinToString(separator = "\n"),
-                                    color = Color.DarkGray,
-                                    fontSize = 10.sp,
-                                    fontStyle = FontStyle.Italic,
-                                    lineHeight = 12.sp,
-                                    modifier = Modifier
-                                        .fillMaxHeight(0.95f)
-                                        .verticalScroll(rememberScrollState())
-                                        .padding(start = 10.dp, end = 10.dp),
-                                )
+                            Text(
+                                text = responses.joinToString(separator = "\n"),
+                                color = Color.DarkGray,
+                                fontSize = 10.sp,
+                                fontStyle = FontStyle.Italic,
+                                lineHeight = 12.sp,
+                                modifier = Modifier
+                                    .fillMaxHeight(0.95f)
+                                    .verticalScroll(rememberScrollState())
+                                    .padding(start = 10.dp, end = 10.dp),
+                            )
 
                         }
                     }
@@ -530,27 +530,6 @@ fun App(kavelagScope: CoroutineScope) {
                             fontWeight = FontWeight.Bold
                         )
                     }
-                    Button(
-                        colors = ButtonDefaults.buttonColors(
-                            backgroundColor = if (isProxyRunning) Color.Red else Color.DarkGray,
-                            contentColor = Color.White
-                        ),
-                        onClick = {
-                            runBlocking {
-                                stopServer()
-                            }
-                        },
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .fillMaxWidth(0.5f),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text(
-                            text = "Stop Proxy",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
                 }
             }
         }
@@ -578,7 +557,7 @@ private fun PopUpHelp(onDismiss: () -> Unit) {
                     modifier = Modifier.padding(bottom = 2.dp)
                 )
                 Text(
-                    text = "Connect your application (Client) to our proxy by making a request to the following address: \"http://localhost:8080/\"\n" +
+                    text = "Connect your application (Client) to our proxy by making a request to the following address: \"http://localhost:9002/\"\n" +
                             "\n" +
                             "Next, fill in the following fields on the Kavelag interface: URL, Port, and the desired functionality.\n" +
                             "\n" +
