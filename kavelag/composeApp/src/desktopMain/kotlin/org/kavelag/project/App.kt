@@ -25,48 +25,41 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import kotlinx.coroutines.*
+import org.kavelag.project.SetUserConfigurationChannel.destinationServerResponseData
 import org.kavelag.project.models.AppliedNetworkAction
 import org.kavelag.project.models.ProxySocketConfiguration
 
 
 @Composable
 @Preview
-fun App(appScope: CoroutineScope) {
+fun App(kavelagScope: CoroutineScope) {
     var Url by remember { mutableStateOf("") }
     val portValues = remember { mutableStateListOf<String>().apply { repeat(1) { add("") } } }
     var LatencyParam by remember { mutableStateOf("") }
     var PackageLossEnabled by remember { mutableStateOf(false) }
     var NetworkErrorEnabled by remember { mutableStateOf(false) }
-
-
     val clientScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     var number by remember { mutableStateOf(1) }
     var isProxyRunning by remember { mutableStateOf(false) }
     var FunctionAlreadySelected by remember { mutableStateOf("") }
-
     var showPortLengthError by remember { mutableStateOf(false) }
     var showSendError by remember { mutableStateOf(false) }
     var showPopUp by remember { mutableStateOf(false) }
-
     val requests = remember { mutableStateListOf<String>() }
     val responses = remember { mutableStateListOf<String>() }
 
-    suspend fun listenerForRequests() {
+    suspend fun listenForRequests() {
         for (request in SetUserConfigurationChannel.incomingHttpData) {
             requests.add(request.httpIncomingData)
         }
     }
 
-    suspend fun listenerForResponses() {
-        for (response in SetUserConfigurationChannel.destinationServerResponseData) {
-            println("-------------------------------------------")
-            println(response)
+    suspend fun listenForResponses() {
+        for (response in destinationServerResponseData) {
+            println("Received response: ${response.httpDestinationServerResponse}")
             responses.add(response.httpDestinationServerResponse)
-//            response.httpDestinationServerResponse?.let { responses.add(it) }
         }
     }
-
-
 
     if (showPortLengthError) {
         LaunchedEffect(Unit) {
@@ -176,19 +169,19 @@ fun App(appScope: CoroutineScope) {
                                 }
                             }
                             Spacer(modifier = Modifier.height(10.dp))
-
-                            Text(
-                                text = requests.joinToString(separator = "\n"),
-                                color = Color.DarkGray,
-                                fontSize = 10.sp,
-                                fontStyle = FontStyle.Italic,
-                                lineHeight = 12.sp,
-                                modifier = Modifier
-                                    .fillMaxHeight(0.95f)
-                                    .verticalScroll(rememberScrollState())
-                                    .padding(start = 10.dp, end = 10.dp),
-                            )
-
+                            for (request in requests) {
+                                Text(
+                                    text = request,
+                                    color = Color.DarkGray,
+                                    fontSize = 10.sp,
+                                    fontStyle = FontStyle.Italic,
+                                    lineHeight = 12.sp,
+                                    modifier = Modifier
+                                        .fillMaxHeight(0.05f)
+                                        .verticalScroll(rememberScrollState())
+                                        .padding(start = 10.dp, end = 10.dp),
+                                )
+                            }
                         }
                     }
                     Spacer(modifier = Modifier.height(3.dp))
@@ -305,7 +298,6 @@ fun App(appScope: CoroutineScope) {
 
                             }
                         }
-
                         Row(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -427,7 +419,6 @@ fun App(appScope: CoroutineScope) {
                             modifier = Modifier.padding(top = 3.dp)
                         )
                     }
-
                     Divider(
                         modifier = Modifier
                             .padding(vertical = 25.dp)
@@ -435,14 +426,12 @@ fun App(appScope: CoroutineScope) {
                             .height(1.dp),
                         color = Color.Gray
                     )
-
                     Text(
                         text = "Function",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
-
                     FunctionBox(
                         "Latency",
                         FunctionAlreadySelected,
@@ -461,7 +450,8 @@ fun App(appScope: CoroutineScope) {
                             PackageLossEnabled = !PackageLossEnabled
                         },
                     )
-                    FunctionBox("Network Error",
+                    FunctionBox(
+                        "Network Error",
                         FunctionAlreadySelected,
                         isProxyRunning,
                         valueBool = NetworkErrorEnabled,
@@ -499,20 +489,19 @@ fun App(appScope: CoroutineScope) {
                                                         portValues[0].toInt(),
                                                         AppliedNetworkAction("latency", LatencyParam.toInt())
                                                     )
-                                                    appScope.launch {
+                                                    kavelagScope.launch {
                                                         startServer(proxySocketConfiguration)
                                                     }
                                                 }
-                                                isProxyRunning = !isProxyRunning
-                                                listenerForRequests()
-                                                listenerForResponses()
+                                                listenForRequests()
+
                                                 if (PackageLossEnabled) {
                                                     println(PackageLossEnabled)
                                                 }
                                                 if (NetworkErrorEnabled) {
                                                     println(NetworkErrorEnabled)
                                                 }
-
+                                                isProxyRunning = !isProxyRunning
                                             } catch (e: Exception) {
                                                 println("Error: ${e.message}")
                                             }
@@ -523,11 +512,10 @@ fun App(appScope: CoroutineScope) {
                                 } else {
                                     showSendError = true
                                 }
-                            } else {
+                            } else
                                 isProxyRunning = !isProxyRunning
-                                runBlocking {
-                                    stopServer()
-                                }
+                            kavelagScope.launch {
+                                listenForResponses()
                             }
                         },
                         modifier = Modifier
@@ -537,6 +525,27 @@ fun App(appScope: CoroutineScope) {
                     ) {
                         Text(
                             text = if (isProxyRunning) "Stop Proxy" else "Start Proxy",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    Button(
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = if (isProxyRunning) Color.Red else Color.DarkGray,
+                            contentColor = Color.White
+                        ),
+                        onClick = {
+                            runBlocking {
+                                stopServer()
+                            }
+                        },
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .fillMaxWidth(0.5f),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = "Stop Proxy",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold
                         )
