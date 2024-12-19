@@ -496,28 +496,11 @@ fun App(appScope: CoroutineScope) {
                                 } else {
                                     showSendError = true
                                 }
-                            } else
+                            } else {
                                 isProxyRunning = !isProxyRunning
-                        },
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .fillMaxWidth(0.5f),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text(
-                            text = if (isProxyRunning) "Stop Proxy" else "Start Proxy",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                    Button(
-                        colors = ButtonDefaults.buttonColors(
-                            backgroundColor = if (isProxyRunning) Color.Red else Color.DarkGray,
-                            contentColor = Color.White
-                        ),
-                        onClick = {
-                            runBlocking {
-                                stopServer()
+                                runBlocking {
+                                    stopServer()
+                                }
                             }
                         },
                         modifier = Modifier
@@ -526,7 +509,7 @@ fun App(appScope: CoroutineScope) {
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(
-                            text = "Stop Proxy",
+                            text = if (isProxyRunning) "Stop Proxy" else "Start Proxy",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold
                         )
