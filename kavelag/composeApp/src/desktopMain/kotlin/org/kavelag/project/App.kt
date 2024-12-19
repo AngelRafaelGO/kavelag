@@ -29,7 +29,6 @@ import org.kavelag.project.models.AppliedNetworkAction
 import org.kavelag.project.models.ProxySocketConfiguration
 
 
-
 @Composable
 @Preview
 fun App(appScope: CoroutineScope) {
@@ -51,8 +50,8 @@ fun App(appScope: CoroutineScope) {
 
     val requests = remember { mutableStateListOf<String>() }
 
-    suspend fun listenerForRequests(){
-        for(request in SetUserConfigurationChannel.incomingHttpData){
+    suspend fun listenerForRequests() {
+        for (request in SetUserConfigurationChannel.incomingHttpData) {
             requests.add(request.httpIncomingData)
         }
     }
@@ -167,19 +166,19 @@ fun App(appScope: CoroutineScope) {
                                 }
                             }
                             Spacer(modifier = Modifier.height(10.dp))
-                         for (request in requests){
-                             Text(
-                                 text = request,
-                                 color = Color.DarkGray,
-                                 fontSize = 10.sp,
-                                 fontStyle = FontStyle.Italic,
-                                 lineHeight = 12.sp,
-                                 modifier = Modifier
-                                     .fillMaxHeight(0.05f)
-                                     .verticalScroll(rememberScrollState())
-                                     .padding(start = 10.dp, end = 10.dp),
-                             )
-                         }
+
+                            Text(
+                                text = requests.joinToString(separator = "\n"),
+                                color = Color.DarkGray,
+                                fontSize = 10.sp,
+                                fontStyle = FontStyle.Italic,
+                                lineHeight = 12.sp,
+                                modifier = Modifier
+                                    .fillMaxHeight(0.95f)
+                                    .verticalScroll(rememberScrollState())
+                                    .padding(start = 10.dp, end = 10.dp),
+                            )
+
                         }
                     }
                     Spacer(modifier = Modifier.height(3.dp))
@@ -492,6 +491,7 @@ fun App(appScope: CoroutineScope) {
                                                         startServer(proxySocketConfiguration)
                                                     }
                                                 }
+                                                isProxyRunning = !isProxyRunning
                                                 listenerForRequests()
                                                 if (PackageLossEnabled) {
                                                     println(PackageLossEnabled)
@@ -499,7 +499,7 @@ fun App(appScope: CoroutineScope) {
                                                 if (NetworkErrorEnabled) {
                                                     println(NetworkErrorEnabled)
                                                 }
-                                                isProxyRunning = !isProxyRunning
+
                                             } catch (e: Exception) {
                                                 println("Error: ${e.message}")
                                             }
