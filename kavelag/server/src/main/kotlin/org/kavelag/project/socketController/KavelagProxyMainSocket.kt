@@ -13,7 +13,9 @@ import org.kavelag.project.KAVELAG_PROXY_PORT
 import org.kavelag.project.SetUserConfigurationChannel.destinationServerResponseData
 import org.kavelag.project.SetUserConfigurationChannel.incomingHttpData
 import org.kavelag.project.models.ProxySocketConfiguration
+import org.kavelag.project.network.NoNetworkException
 import org.kavelag.project.network.networkIssueSelector
+import org.kavelag.project.network.oneRequestFailsOver2
 import org.kavelag.project.parser.parseIncomingHttpRequest
 import org.kavelag.project.targetServerProcessing.callTargetServer
 import java.nio.channels.ClosedSelectorException
@@ -29,9 +31,11 @@ object KavelagProxyMainSocket {
         isStopping = false
         selectorManager = ActorSelectorManager(Dispatchers.IO)
         serverSocket = aSocket(selectorManager!!).tcp().bind(port = KAVELAG_PROXY_PORT)
+        var count = 0
         try {
             println("Socket started on port $KAVELAG_PROXY_PORT")
             coroutineScope {
+                count++
                 while (!isStopping) {
                     try {
                         val socket = serverSocket?.takeIf { !it.isClosed }?.accept()
@@ -42,9 +46,12 @@ object KavelagProxyMainSocket {
                                     launch {
                                         incomingHttpData.send(HttpIncomingData(incomingHttpRequest))
                                     }
+
                                     val parsedRequest =
                                         parseIncomingHttpRequest(incomingHttpRequest)
-                                    networkIssueSelector(proxySocketConfiguration.appliedNetworkAction)
+                                    networkIssueSelector(proxySocketConfiguration.appliedNetworkAction, count)
+
+
                                     val response = callTargetServer(
                                         proxySocketConfiguration.url,
                                         proxySocketConfiguration.port,
@@ -60,7 +67,15 @@ object KavelagProxyMainSocket {
                                         }
                                     }
                                     // TODO: forward response to client
-                                } catch (e: Throwable) {
+                                } catch (e: NoNetworkException){
+                                    println("Network issue occurred: ${e.message}")
+//                                    val errorResponse = createHttpErrorResponse(503, "Service Unavailable")
+                                    launch {
+                                        destinationServerResponseData.send(HttpDestinationServerResponse(e.message!!))
+                                    }
+                                }
+
+                                catch (e: Throwable) {
                                     println("Error handling socket: $e")
                                 } finally {
                                     try {
