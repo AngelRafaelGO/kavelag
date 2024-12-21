@@ -12,8 +12,10 @@ import org.kavelag.project.HttpIncomingData
 import org.kavelag.project.KAVELAG_PROXY_PORT
 import org.kavelag.project.SetUserConfigurationChannel.destinationServerResponseData
 import org.kavelag.project.SetUserConfigurationChannel.incomingHttpData
+import org.kavelag.project.models.NetworkException
 import org.kavelag.project.models.ProxySocketConfiguration
 import org.kavelag.project.network.networkIssueSelector
+import org.kavelag.project.network.oneRequestFailsOver2
 import org.kavelag.project.parser.parseIncomingHttpRequest
 import org.kavelag.project.targetServerProcessing.callTargetServer
 import java.nio.channels.ClosedSelectorException
@@ -29,6 +31,7 @@ object KavelagProxyMainSocket {
         isStopping = false
         selectorManager = ActorSelectorManager(Dispatchers.IO)
         serverSocket = aSocket(selectorManager!!).tcp().bind(port = KAVELAG_PROXY_PORT)
+        var count = 1
         try {
             println("Socket started on port $KAVELAG_PROXY_PORT")
             coroutineScope {
@@ -42,14 +45,17 @@ object KavelagProxyMainSocket {
                                     launch {
                                         incomingHttpData.send(HttpIncomingData(incomingHttpRequest))
                                     }
+
                                     val parsedRequest =
                                         parseIncomingHttpRequest(incomingHttpRequest)
-                                    networkIssueSelector(proxySocketConfiguration.appliedNetworkAction)
+                                    networkIssueSelector(proxySocketConfiguration.appliedNetworkAction, count)
+
                                     val response = callTargetServer(
                                         proxySocketConfiguration.url,
                                         proxySocketConfiguration.port,
                                         parsedRequest
                                     )
+                                    count++
                                     if (response != null) {
                                         launch {
                                             destinationServerResponseData.send(
@@ -60,7 +66,15 @@ object KavelagProxyMainSocket {
                                         }
                                     }
                                     // TODO: forward response to client
-                                } catch (e: Throwable) {
+                                } catch (e: NetworkException){
+                                    count++
+                                    println("Network issue occurred: ${e.message}")
+                                    launch {
+                                        destinationServerResponseData.send(HttpDestinationServerResponse(e.message!!))
+                                    }
+                                }
+
+                                catch (e: Throwable) {
                                     println("Error handling socket: $e")
                                 } finally {
                                     try {
