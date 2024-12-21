@@ -2,6 +2,7 @@ package org.kavelag.project.network
 
 import kotlinx.coroutines.delay
 import org.kavelag.project.models.AppliedNetworkAction
+import org.kavelag.project.models.NetworkException
 
 suspend fun networkIssueSelector(param: AppliedNetworkAction, count: Int) {
     val action = param.appliedNetworkAction.lowercase().trim()
@@ -13,23 +14,21 @@ suspend fun networkIssueSelector(param: AppliedNetworkAction, count: Int) {
         "nonetwork" -> noNetwork()
     }
 }
-class NoNetworkException(message: String) : Exception(message)
 
+//TODO: Find a good error to return
 private fun noNetwork() {
-    throw NoNetworkException("No network available")
+    throw NetworkException("No network available")
 }
 
 private suspend fun networkLatency(delay: Long) {
     delay(delay)
 }
 
-fun oneRequestFailsOver2(count: Int): Boolean {
+fun oneRequestFailsOver2(count: Int) {
     println("1on2: $count")
-    return if (count % 2 == 0) {
-        println("request can not be sent")
-        false
+    if (count % 2 == 0) {
+        noNetwork()
     } else {
         println("Request sent!!!")
-        true
     }
 }
