@@ -7,3 +7,7 @@
 </br>
 
 Kavelag is a desktop application that lets you simulate common network problems in order to test your application's behavior under stressful conditions.
+
+Kavelag sits between your client and your server. It recieves, parses and resends the request to the original destination server.
+
+Kavelag is open source. The current project features a multiplatform installer.

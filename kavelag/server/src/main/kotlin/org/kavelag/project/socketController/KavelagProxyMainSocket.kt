@@ -59,7 +59,6 @@ object KavelagProxyMainSocket {
                                             )
                                         }
                                     }
-                                    // TODO: forward response to client
                                 } catch (e: Throwable) {
                                     println("Error handling socket: $e")
                                 } finally {

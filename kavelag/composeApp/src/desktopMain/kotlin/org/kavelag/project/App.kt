@@ -56,7 +56,6 @@ fun App(kavelagScope: CoroutineScope) {
 
     suspend fun listenForResponses() {
         for (response in destinationServerResponseData) {
-            println("Received response: ${response.httpDestinationServerResponse}")
             responses.add(response.httpDestinationServerResponse)
         }
     }

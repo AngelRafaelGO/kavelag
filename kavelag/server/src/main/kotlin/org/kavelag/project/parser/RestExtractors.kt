@@ -4,21 +4,21 @@ fun extractMethod(httpRequest: String): String? =
     runCatching {
         extractLinesFromRequest(httpRequest)?.let { RestRegex.methodRegex.find(it)?.value }
     }.onFailure {
-        println("Error while parsing Method from request: ${it.message}")
+        println("Error while parsing Method from request: $it")
     }.getOrNull()
 
 fun extractHTTPProtocolVersion(httpRequest: String): String? =
     runCatching {
         extractLinesFromRequest(httpRequest)?.let { RestRegex.httpProtocolVersionRegex.find(it)?.groupValues?.get(0) }
     }.onFailure {
-        println("Error while parsing HTTP Protocol Version from request: ${it.message}")
+        println("Error while parsing HTTP Protocol Version from request: $it")
     }.getOrNull()
 
 fun extractRequestedResourcePath(httpRequest: String): String? =
     runCatching {
         extractLinesFromRequest(httpRequest)?.let { RestRegex.requestedResourceRegex.find(it)?.groupValues?.get(1) }
     }.onFailure {
-        println("Error while parsing Requested Resource from request: ${it.message}")
+        println("Error while parsing Requested Resource from request: $it")
     }.getOrNull()
 
 
@@ -47,7 +47,7 @@ fun extractHeaders(httpRequest: String): MutableMap<String, String>? =
             }
         }
     }.onFailure {
-        println("Error while parsing Headers from request: ${it.message}")
+        println("Error while parsing Headers from request: $it")
     }.getOrNull()
 
 /*
@@ -58,5 +58,5 @@ fun extractLinesFromRequest(httpRequest: String): String? =
     runCatching {
         httpRequest.split("\r\n").getOrNull(0)
     }.onFailure {
-        println("Error while extracting line from request: ${it.message}")
+        println("Error while extracting line from request: $it")
     }.getOrNull()
