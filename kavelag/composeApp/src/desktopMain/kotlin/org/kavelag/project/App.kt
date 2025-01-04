@@ -489,15 +489,33 @@ fun App(kavelagScope: CoroutineScope) {
                                                         startServer(proxySocketConfiguration)
                                                     }
                                                 }
-                                                isProxyRunning = !isProxyRunning
-                                                listenForRequests()
+//                                                isProxyRunning = !isProxyRunning
+//                                                listenForRequests()
 
                                                 if (PackageLossEnabled) {
-                                                    println(PackageLossEnabled)
+                                                    val proxySocketConfiguration = ProxySocketConfiguration(
+                                                        Url,
+                                                        portValues[0].toInt(),
+                                                        AppliedNetworkAction("1on2")
+                                                    )
+                                                    kavelagScope.launch {
+                                                        startServer(proxySocketConfiguration)
+                                                    }
                                                 }
+
                                                 if (NetworkErrorEnabled) {
-                                                    println(NetworkErrorEnabled)
+                                                    val proxySocketConfiguration = ProxySocketConfiguration(
+                                                        Url,
+                                                        portValues[0].toInt(),
+                                                        AppliedNetworkAction("noNetwork")
+                                                    )
+                                                    kavelagScope.launch {
+                                                        startServer(proxySocketConfiguration)
+                                                    }
+
                                                 }
+                                                isProxyRunning = !isProxyRunning
+                                                listenForRequests()
                                             } catch (e: Exception) {
                                                 println("Error: ${e.message}")
                                             }
