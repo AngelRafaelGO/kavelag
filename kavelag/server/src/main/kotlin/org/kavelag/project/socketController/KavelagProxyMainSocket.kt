@@ -15,7 +15,6 @@ import org.kavelag.project.SetUserConfigurationChannel.incomingHttpData
 import org.kavelag.project.models.NetworkException
 import org.kavelag.project.models.ProxySocketConfiguration
 import org.kavelag.project.network.networkIssueSelector
-import org.kavelag.project.network.oneRequestFailsOver2
 import org.kavelag.project.parser.parseIncomingHttpRequest
 import org.kavelag.project.targetServerProcessing.callTargetServer
 import java.nio.channels.ClosedSelectorException
@@ -45,11 +44,9 @@ object KavelagProxyMainSocket {
                                     launch {
                                         incomingHttpData.send(HttpIncomingData(incomingHttpRequest))
                                     }
-
                                     val parsedRequest =
                                         parseIncomingHttpRequest(incomingHttpRequest)
                                     networkIssueSelector(proxySocketConfiguration.appliedNetworkAction, count)
-
                                     val response = callTargetServer(
                                         proxySocketConfiguration.url,
                                         proxySocketConfiguration.port,
@@ -66,15 +63,13 @@ object KavelagProxyMainSocket {
                                         }
                                     }
                                     // TODO: forward response to client
-                                } catch (e: NetworkException){
+                                } catch (e: NetworkException) {
                                     count++
                                     println("Network issue occurred: ${e.message}")
                                     launch {
                                         destinationServerResponseData.send(HttpDestinationServerResponse(e.message!!))
                                     }
-                                }
-
-                                catch (e: Throwable) {
+                                } catch (e: Throwable) {
                                     println("Error handling socket: $e")
                                 } finally {
                                     try {
