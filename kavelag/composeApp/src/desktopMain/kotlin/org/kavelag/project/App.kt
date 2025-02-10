@@ -12,7 +12,10 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,62 +27,26 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import kotlinx.coroutines.*
-import org.kavelag.project.SetUserConfigurationChannel.destinationServerResponseData
-import org.kavelag.project.models.AppliedNetworkAction
-import org.kavelag.project.models.ProxySocketConfiguration
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 
 
 @Composable
 @Preview
 fun App(kavelagScope: CoroutineScope) {
-    var Url by remember { mutableStateOf("") }
-    val portValues = remember { mutableStateListOf<String>().apply { repeat(1) { add("") } } }
-    var LatencyParam by remember { mutableStateOf("") }
-    var PackageLossEnabled by remember { mutableStateOf(false) }
-    var NetworkErrorEnabled by remember { mutableStateOf(false) }
-    val clientScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-    var number by remember { mutableStateOf(1) }
-    var isProxyRunning by remember { mutableStateOf(false) }
-    var FunctionAlreadySelected by remember { mutableStateOf("") }
-    var showPortLengthError by remember { mutableStateOf(false) }
-    var showSendError by remember { mutableStateOf(false) }
-    var showPopUp by remember { mutableStateOf(false) }
-    val requests = remember { mutableStateListOf<String>() }
-    val responses = remember { mutableStateListOf<String>() }
+    val viewModel = remember { AppViewModel() }
 
-    suspend fun listenForRequests() {
-        for (request in SetUserConfigurationChannel.incomingHttpData) {
-            requests.add(request.httpIncomingData)
-        }
-    }
-
-    suspend fun listenForResponses() {
-        for (response in destinationServerResponseData) {
-            responses.add(response.httpDestinationServerResponse)
-        }
-    }
-
-    if (showPortLengthError) {
+    if (viewModel.showPortLengthError) {
         LaunchedEffect(Unit) {
             delay(3000)
-            showPortLengthError = false
+            viewModel.showPortLengthError = false
         }
     }
-    if (showSendError) {
+    if (viewModel.showSendError) {
         LaunchedEffect(Unit) {
             delay(3000)
-            showSendError = false
+            viewModel.showSendError = false
         }
-    }
-    LaunchedEffect(LatencyParam) {
-        if (LatencyParam.isNotEmpty()) FunctionAlreadySelected = "Latency" else FunctionAlreadySelected = ""
-    }
-    LaunchedEffect(PackageLossEnabled) {
-        if (PackageLossEnabled) FunctionAlreadySelected = "Package Loss" else FunctionAlreadySelected = ""
-    }
-    LaunchedEffect(NetworkErrorEnabled) {
-        if (NetworkErrorEnabled) FunctionAlreadySelected = "Network Error" else FunctionAlreadySelected = ""
     }
 
     MaterialTheme {
@@ -101,7 +68,7 @@ fun App(kavelagScope: CoroutineScope) {
                     modifier = Modifier
                         .size(20.dp)
                         .background(Color.DarkGray, shape = RoundedCornerShape(4.dp))
-                        .clickable(onClick = { showPopUp = true }),
+                        .clickable(onClick = { viewModel.showPopUp = true }),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -117,8 +84,8 @@ fun App(kavelagScope: CoroutineScope) {
                     .fillMaxWidth()
                     .fillMaxHeight()
             ) {
-                if (showPopUp) {
-                    PopUpHelp(onDismiss = { showPopUp = false })
+                if (viewModel.showPopUp) {
+                    PopUpHelp(onDismiss = { viewModel.showPopUp = false })
                 }
                 Column(
                     Modifier
@@ -169,7 +136,7 @@ fun App(kavelagScope: CoroutineScope) {
                             }
                             Spacer(modifier = Modifier.height(10.dp))
                             Text(
-                                text = requests.joinToString(separator = "\n"),
+                                text = viewModel.requests.joinToString(separator = "\n"),
                                 color = Color.DarkGray,
                                 fontSize = 10.sp,
                                 fontStyle = FontStyle.Italic,
@@ -224,7 +191,7 @@ fun App(kavelagScope: CoroutineScope) {
                             }
                             Spacer(modifier = Modifier.height(10.dp))
                             Text(
-                                text = responses.joinToString(separator = "\n"),
+                                text = viewModel.responses.joinToString(separator = "\n"),
                                 color = Color.DarkGray,
                                 fontSize = 10.sp,
                                 fontStyle = FontStyle.Italic,
@@ -273,11 +240,11 @@ fun App(kavelagScope: CoroutineScope) {
                                         .fillMaxWidth(0.1f)
                                 )
                                 CustomTextField(
-                                    value = Url,
+                                    value = viewModel.Url,
                                     onValueChange = { newValue ->
-                                        Url = newValue
+                                        viewModel.Url = newValue
                                     },
-                                    enabled = !isProxyRunning,
+                                    enabled = !viewModel.isProxyRunning,
                                     typeNumber = false,
                                     leadingIcon = null,
                                     trailingIcon = null,
@@ -305,7 +272,7 @@ fun App(kavelagScope: CoroutineScope) {
                                     .fillMaxWidth(0.1f)
 
                             )
-                            repeat(number) { index ->
+                            repeat(viewModel.number) { index ->
                                 if (index % 3 == 0) {
                                     Row(
                                         modifier = Modifier
@@ -314,14 +281,14 @@ fun App(kavelagScope: CoroutineScope) {
                                         horizontalArrangement = Arrangement.SpaceBetween
                                     ) {
                                         for (i in 0 until 3) {
-                                            if (index + i < number) {
+                                            if (index + i < viewModel.number) {
                                                 CustomTextField(
-                                                    value = portValues[index + i],
+                                                    value = viewModel.portValues[index + i],
                                                     onValueChange = { newValue ->
-                                                        portValues[index + i] =
+                                                        viewModel.portValues[index + i] =
                                                             newValue
                                                     },
-                                                    enabled = !isProxyRunning,
+                                                    enabled = !viewModel.isProxyRunning,
                                                     typeNumber = true,
                                                     leadingIcon = null,
                                                     trailingIcon = null,
@@ -340,12 +307,12 @@ fun App(kavelagScope: CoroutineScope) {
                                             }
                                         }
                                         Spacer(modifier = Modifier.width(20.dp))
-                                        if (number != 1) {
+                                        if (viewModel.number != 1) {
                                             Box(
                                                 modifier = Modifier
                                                     .size(20.dp)
                                                     .background(
-                                                        if (!isProxyRunning) {
+                                                        if (!viewModel.isProxyRunning) {
                                                             Color.DarkGray
                                                         } else {
                                                             Color.Gray
@@ -353,13 +320,7 @@ fun App(kavelagScope: CoroutineScope) {
                                                         shape = RoundedCornerShape(4.dp)
                                                     )
                                                     .clickable {
-                                                        if (!isProxyRunning) {
-                                                            number--;
-                                                            portValues.removeLast();
-                                                            if (showPortLengthError == true) {
-                                                                showPortLengthError = false
-                                                            }
-                                                        }
+                                                        viewModel.deletePortSlot()
                                                     },
 
                                                 contentAlignment = Alignment.Center
@@ -381,21 +342,14 @@ fun App(kavelagScope: CoroutineScope) {
                         modifier = Modifier
                             .size(20.dp)
                             .background(
-                                if (!isProxyRunning) {
+                                if (!viewModel.isProxyRunning) {
                                     Color.DarkGray
                                 } else {
                                     Color.Gray
                                 }, shape = RoundedCornerShape(4.dp)
                             )
                             .clickable {
-                                if (!isProxyRunning) {
-                                    if (number < 3) {
-                                        portValues.add("")
-                                        number++
-                                    } else {
-                                        showPortLengthError = true
-                                    }
-                                }
+                                viewModel.addPortSlot()
                             },
                         contentAlignment = Alignment.Center
                     ) {
@@ -406,7 +360,7 @@ fun App(kavelagScope: CoroutineScope) {
                             modifier = Modifier.size(12.dp)
                         )
                     }
-                    if (showPortLengthError) {
+                    if (viewModel.showPortLengthError) {
                         Text(
                             text = "La limite de ports est de 3",
                             color = Color.Red,
@@ -430,33 +384,33 @@ fun App(kavelagScope: CoroutineScope) {
                     )
                     FunctionBox(
                         "Latency",
-                        FunctionAlreadySelected,
-                        isProxyRunning,
-                        value = LatencyParam,
+                        viewModel.FunctionAlreadySelected,
+                        viewModel.isProxyRunning,
+                        value = viewModel.LatencyParam,
                         onValueChange = { newValue ->
-                            LatencyParam = newValue
+                            viewModel.LatencyParam = newValue
                         },
                     )
                     FunctionBox(
-                        "Package Loss",
-                        FunctionAlreadySelected,
-                        isProxyRunning,
-                        valueBool = PackageLossEnabled,
+                        "Random Fail",
+                        viewModel.FunctionAlreadySelected,
+                        viewModel.isProxyRunning,
+                        valueBool = viewModel.PackageLossEnabled,
                         onValueBoolChange = {
-                            PackageLossEnabled = !PackageLossEnabled
+                            viewModel.PackageLossEnabled = !viewModel.PackageLossEnabled
                         },
                     )
                     FunctionBox(
                         "Network Error",
-                        FunctionAlreadySelected,
-                        isProxyRunning,
-                        valueBool = NetworkErrorEnabled,
+                        viewModel.FunctionAlreadySelected,
+                        viewModel.isProxyRunning,
+                        valueBool = viewModel.NetworkErrorEnabled,
                         onValueBoolChange = {
-                            NetworkErrorEnabled = !NetworkErrorEnabled
+                            viewModel.NetworkErrorEnabled = !viewModel.NetworkErrorEnabled
                         })
 
                     Spacer(modifier = Modifier.height(20.dp))
-                    if (showSendError) {
+                    if (viewModel.showSendError) {
                         Text(
                             text = "Error missing arguments check if \"Url\" \"Port\" and \"Function\" are filled ",
                             color = Color.Red,
@@ -470,71 +424,11 @@ fun App(kavelagScope: CoroutineScope) {
                     }
                     Button(
                         colors = ButtonDefaults.buttonColors(
-                            backgroundColor = if (isProxyRunning) Color.Red else Color.DarkGray,
+                            backgroundColor = if (viewModel.isProxyRunning) Color.Red else Color.DarkGray,
                             contentColor = Color.White
                         ),
                         onClick = {
-                            if (!isProxyRunning) {
-                                if (Url.isNotEmpty() && portValues.isNotEmpty() && FunctionAlreadySelected.isNotEmpty()) {
-                                    if (portValues.all { it.isNotEmpty() }) {
-                                        clientScope.launch {
-                                            try {
-                                                if (LatencyParam.isNotEmpty()) {
-                                                    val proxySocketConfiguration = ProxySocketConfiguration(
-                                                        Url,
-                                                        portValues[0].toInt(),
-                                                        AppliedNetworkAction("latency", LatencyParam.toInt())
-                                                    )
-                                                    kavelagScope.launch {
-                                                        startServer(proxySocketConfiguration)
-                                                    }
-                                                }
-//                                                isProxyRunning = !isProxyRunning
-//                                                listenForRequests()
-
-                                                if (PackageLossEnabled) {
-                                                    val proxySocketConfiguration = ProxySocketConfiguration(
-                                                        Url,
-                                                        portValues[0].toInt(),
-                                                        AppliedNetworkAction("1on2")
-                                                    )
-                                                    kavelagScope.launch {
-                                                        startServer(proxySocketConfiguration)
-                                                    }
-                                                }
-
-                                                if (NetworkErrorEnabled) {
-                                                    val proxySocketConfiguration = ProxySocketConfiguration(
-                                                        Url,
-                                                        portValues[0].toInt(),
-                                                        AppliedNetworkAction("noNetwork")
-                                                    )
-                                                    kavelagScope.launch {
-                                                        startServer(proxySocketConfiguration)
-                                                    }
-
-                                                }
-                                                isProxyRunning = !isProxyRunning
-                                                listenForRequests()
-                                            } catch (e: Exception) {
-                                                println("Error: ${e.message}")
-                                            }
-                                        }
-                                    } else {
-                                        showSendError = true
-                                    }
-                                } else {
-                                    showSendError = true
-                                }
-                            } else {
-                                isProxyRunning = !isProxyRunning
-                                runBlocking {
-                                    stopServer()
-                                }
-                            }
-                            kavelagScope.launch {
-                                listenForResponses()
-                            }
+                            viewModel.toggleProxy(kavelagScope)
                         },
                         modifier = Modifier
                             .padding(16.dp)
@@ -542,7 +436,7 @@ fun App(kavelagScope: CoroutineScope) {
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(
-                            text = if (isProxyRunning) "Stop Proxy" else "Start Proxy",
+                            text = if (viewModel.isProxyRunning) "Stop Proxy" else "Start Proxy",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -581,7 +475,7 @@ private fun PopUpHelp(onDismiss: () -> Unit) {
                             "There are several types of functionalities:\n" +
                             "\n" +
                             "- Latency: Simulates network latency on the path of your request.\n" +
-                            "- Packet Loss: Simulates packet loss during the reception of the request.\n" +
+                            "- Random Fail: Simulates random requests failling.\n" +
                             "- Network Error: Simulates total network loss during the return path of the request.",
                     fontSize = 13.sp,
                     fontStyle = FontStyle.Italic,
@@ -680,7 +574,7 @@ fun FunctionBox(
                         fontSize = 15.sp,
                         placeholderText = ""
                     )
-                } else if ((name == "Package Loss" || name == "Network Error") && valueBool != null && onValueBoolChange != null) {
+                } else if ((name == "Random Fail" || name == "Network Error") && valueBool != null && onValueBoolChange != null) {
                     Checkbox(
                         checked = valueBool,
                         onCheckedChange = onValueBoolChange,
