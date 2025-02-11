@@ -30,7 +30,6 @@ object KavelagProxyMainSocket {
         isStopping = false
         selectorManager = ActorSelectorManager(Dispatchers.IO)
         serverSocket = aSocket(selectorManager!!).tcp().bind(port = KAVELAG_PROXY_PORT)
-        var count = 1
         try {
             println("Socket started on port $KAVELAG_PROXY_PORT")
             coroutineScope {
@@ -44,27 +43,28 @@ object KavelagProxyMainSocket {
                                     launch {
                                         incomingHttpData.send(HttpIncomingData(incomingHttpRequest))
                                     }
-                                    val parsedRequest =
-                                        parseIncomingHttpRequest(incomingHttpRequest)
-                                    networkIssueSelector(proxySocketConfiguration.appliedNetworkAction, count)
-                                    val response = callTargetServer(
-                                        proxySocketConfiguration.url,
-                                        proxySocketConfiguration.port,
-                                        parsedRequest
-                                    )
-                                    count++
-                                    if (response != null) {
-                                        launch {
-                                            destinationServerResponseData.send(
-                                                HttpDestinationServerResponse(
-                                                    response
+                                    val parsedRequest = parseIncomingHttpRequest(incomingHttpRequest)
+
+                                    val isNetworkIssueApplied =
+                                        networkIssueSelector(proxySocketConfiguration.appliedNetworkAction)
+                                    if (isNetworkIssueApplied) {
+                                        val response = callTargetServer(
+                                            proxySocketConfiguration.url,
+                                            proxySocketConfiguration.port,
+                                            parsedRequest
+                                        )
+                                        if (response != null) {
+                                            launch {
+                                                destinationServerResponseData.send(
+                                                    HttpDestinationServerResponse(
+                                                        response
+                                                    )
                                                 )
-                                            )
+                                            }
                                         }
+                                        // TODO: forward response to client
                                     }
-                                    // TODO: forward response to client
                                 } catch (e: NetworkException) {
-                                    count++
                                     println("Network issue occurred: ${e.message}")
                                     launch {
                                         destinationServerResponseData.send(HttpDestinationServerResponse(e.message!!))
