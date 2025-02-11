@@ -17,6 +17,9 @@ import org.kavelag.project.models.ProxySocketConfiguration
 import org.kavelag.project.network.networkIssueSelector
 import org.kavelag.project.parser.parseIncomingHttpRequest
 import org.kavelag.project.targetServerProcessing.callTargetServer
+import org.kavelag.project.targetServerProcessing.isPortOpen
+import java.net.InetSocketAddress
+import java.net.Socket
 import java.nio.channels.ClosedSelectorException
 
 object KavelagProxyMainSocket {
@@ -41,31 +44,36 @@ object KavelagProxyMainSocket {
                                 val incomingHttpRequest = socket.openReadChannel().readRemaining().readText()
                                 proxySocketConfiguration.port.forEach { port ->
                                     try {
-                                        launch {
-                                            incomingHttpData.send(HttpIncomingData(incomingHttpRequest))
-                                        }
-                                        println(port)
-                                        val parsedRequest =
-                                            parseIncomingHttpRequest(incomingHttpRequest)
-                                        val isNetworkIssueSupplied =
-                                            networkIssueSelector(proxySocketConfiguration.appliedNetworkAction)
+                                        if (isPortOpen(proxySocketConfiguration.url, port)) {
+                                            launch {
+                                                incomingHttpData.send(HttpIncomingData(incomingHttpRequest))
+                                            }
+                                            println(port)
+                                            val parsedRequest =
+                                                parseIncomingHttpRequest(incomingHttpRequest)
+                                            val isNetworkIssueSupplied =
+                                                networkIssueSelector(proxySocketConfiguration.appliedNetworkAction)
 
-                                        if (isNetworkIssueSupplied) {
-                                            val response = callTargetServer(
-                                                proxySocketConfiguration.url,
-                                                port,
-                                                parsedRequest
-                                            )
-                                            println(response)
-                                            if (response != null) {
-                                                launch {
-                                                    destinationServerResponseData.send(
-                                                        HttpDestinationServerResponse(
-                                                            "On port $port: $response"
+                                            if (isNetworkIssueSupplied) {
+                                                val response = callTargetServer(
+                                                    proxySocketConfiguration.url,
+                                                    port,
+                                                    parsedRequest
+                                                )
+                                                println(response)
+                                                if (response != null) {
+                                                    launch {
+                                                        destinationServerResponseData.send(
+                                                            HttpDestinationServerResponse(
+                                                                "On port $port: $response"
+                                                            )
                                                         )
-                                                    )
+                                                    }
                                                 }
                                             }
+                                        }
+                                        launch {
+                                            incomingHttpData.send(HttpIncomingData("on port $port -> this port is closed or unavailable"))
                                         }
                                         // TODO: forward response to client
                                     } catch (e: NetworkException) {
@@ -75,10 +83,8 @@ object KavelagProxyMainSocket {
                                         }
                                     } catch (e: Throwable) {
 
-//                                        println("Error handling socket: $e")
-                                        launch {
-                                            destinationServerResponseData.send(HttpDestinationServerResponse(e.toString()))
-                                        }
+                                        println("Error handling socket: $e")
+
                                     } finally {
 
                                         try {
@@ -87,6 +93,7 @@ object KavelagProxyMainSocket {
                                             println("Error closing socket: $closeException")
                                         }
                                     }
+
                                 }
                             }
                         }
