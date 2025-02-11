@@ -18,8 +18,6 @@ import org.kavelag.project.network.networkIssueSelector
 import org.kavelag.project.parser.parseIncomingHttpRequest
 import org.kavelag.project.targetServerProcessing.callTargetServer
 import org.kavelag.project.targetServerProcessing.isPortOpen
-import java.net.InetSocketAddress
-import java.net.Socket
 import java.nio.channels.ClosedSelectorException
 
 object KavelagProxyMainSocket {
@@ -41,59 +39,91 @@ object KavelagProxyMainSocket {
                         val socket = serverSocket?.takeIf { !it.isClosed }?.accept()
                         if (socket != null) {
                             launch(Dispatchers.IO) {
-                                val incomingHttpRequest = socket.openReadChannel().readRemaining().readText()
                                 proxySocketConfiguration.port.forEach { port ->
-                                    try {
-                                        if (isPortOpen(proxySocketConfiguration.url, port)) {
+                                    if (isPortOpen(proxySocketConfiguration.url, port)) {
+                                        try {
+                                            val inputChannel = socket.openReadChannel()
+                                            val outputChannel = socket.openWriteChannel(autoFlush = true)
+                                            val requestBuilder = StringBuilder()
+                                            var line: String?
+                                            var contentLength = 0
+                                            var requestBody = ""
+
+                                            while (true) {
+                                                line = inputChannel.readUTF8Line()
+                                                if (line.isNullOrEmpty()) break
+                                                requestBuilder.appendLine(line)
+                                                // Check for "Content-Length" in case of POST requests
+                                                if (line.startsWith("Content-Length:", ignoreCase = true)) {
+                                                    contentLength = line.split(":")[1].trim().toInt()
+                                                }
+                                            }
+
+                                            if (contentLength > 0) {
+                                                requestBody = inputChannel.readPacket(contentLength).readText()
+                                            }
+
+                                            val incomingHttpRequest = requestBuilder.toString() + "\n\n" + requestBody
+
                                             launch {
                                                 incomingHttpData.send(HttpIncomingData(incomingHttpRequest))
                                             }
-                                            println(port)
-                                            val parsedRequest =
-                                                parseIncomingHttpRequest(incomingHttpRequest)
-                                            val isNetworkIssueSupplied =
+
+                                            val parsedRequest = parseIncomingHttpRequest(incomingHttpRequest)
+                                            val isNetworkIssueApplied =
                                                 networkIssueSelector(proxySocketConfiguration.appliedNetworkAction)
 
-                                            if (isNetworkIssueSupplied) {
+                                            if (isNetworkIssueApplied) {
                                                 val response = callTargetServer(
                                                     proxySocketConfiguration.url,
                                                     port,
                                                     parsedRequest
                                                 )
-                                                println(response)
                                                 if (response != null) {
                                                     launch {
                                                         destinationServerResponseData.send(
                                                             HttpDestinationServerResponse(
-                                                                "On port $port: $response"
+                                                                "Port $port -> $response"
                                                             )
                                                         )
                                                     }
+                                                    val fullResponse = buildString {
+                                                        append("HTTP/1.1 200 OK\r\n")
+                                                        append("Content-Type: text/plain\r\n")
+                                                        append("Content-Length: ${response.toByteArray().size}\r\n")
+                                                        append("Connection: close\r\n")
+                                                        append("\r\n")
+                                                        append(response)
+                                                    }
+                                                    outputChannel.writeStringUtf8(fullResponse)
+                                                    outputChannel.flush()
+                                                    outputChannel.flushAndClose()
+                                                    socket.close()
                                                 }
                                             }
+                                        } catch (e: NetworkException) {
+                                            println("Network issue occurred: ${e.message}")
+                                            launch {
+                                                destinationServerResponseData.send(HttpDestinationServerResponse(e.message!!))
+                                            }
+                                        } catch (e: Throwable) {
+                                            println("Error handling socket: $e")
+                                        } finally {
+                                            try {
+                                                socket.close()
+                                            } catch (closeException: Throwable) {
+                                                println("Error closing socket: $closeException")
+                                            }
                                         }
+                                    } else {
                                         launch {
-                                            incomingHttpData.send(HttpIncomingData("on port $port -> this port is closed or unavailable"))
-                                        }
-                                        // TODO: forward response to client
-                                    } catch (e: NetworkException) {
-                                        println("Network issue occurred: ${e.message}")
-                                        launch {
-                                            destinationServerResponseData.send(HttpDestinationServerResponse(e.message!!))
-                                        }
-                                    } catch (e: Throwable) {
-
-                                        println("Error handling socket: $e")
-
-                                    } finally {
-
-                                        try {
-                                            socket.close()
-                                        } catch (closeException: Throwable) {
-                                            println("Error closing socket: $closeException")
+                                            destinationServerResponseData.send(
+                                                HttpDestinationServerResponse(
+                                                    "Port $port -> this port is closed or unavailable"
+                                                )
+                                            )
                                         }
                                     }
-
                                 }
                             }
                         }

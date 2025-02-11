@@ -6,14 +6,8 @@ import io.ktor.http.*
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import okio.Timeout
-import org.kavelag.project.HttpIncomingData
-import org.kavelag.project.SetUserConfigurationChannel.incomingHttpData
 import org.kavelag.project.httpClient
 import org.kavelag.project.models.HttpRequest
-import java.net.InetSocketAddress
-import java.net.Socket
 
 suspend fun callTargetServer(destinationURL: String, destinationPort: Int, httpRequest: HttpRequest): String? {
     when (httpRequest.method) {
@@ -63,19 +57,15 @@ suspend fun requestBuilder(
 }
 
 suspend fun isPortOpen(host: String, port: Int): Boolean {
-    val selectorManager = ActorSelectorManager(Dispatchers.IO)
-    try {
-        val url = host.replace(Regex("^https?://"), "").split("/")[0]
-        println("🔍 Test de connexion avec ktor-network à $host:$port")
-        aSocket(selectorManager).tcp().connect(
-            hostname = url,
+    return try {
+        aSocket(ActorSelectorManager(Dispatchers.IO)).tcp().connect(
+            hostname = host.replace(Regex("^https?://"), "").split("/")[0],
             port = port
         ).use {
-            println("✅ Port $port ouvert sur $host")
+            println("Port $port ouvert sur $host")
+            true
         }
-        return true
     } catch (e: Exception) {
-            println("❌ Port $port fermé ou inaccessible sur $host -> $e")
-    return false
+        false
     }
 }
