@@ -38,44 +38,52 @@ object KavelagProxyMainSocket {
                     try {
                         val socket = serverSocket?.takeIf { !it.isClosed }?.accept()
                         if (socket != null) {
-                            launch(Dispatchers.IO) {
-                                try {
+                                launch(Dispatchers.IO) {
                                     val incomingHttpRequest = socket.openReadChannel().readRemaining().readText()
-                                    launch {
-                                        incomingHttpData.send(HttpIncomingData(incomingHttpRequest))
-                                    }
-                                    val parsedRequest =
-                                        parseIncomingHttpRequest(incomingHttpRequest)
-                                    networkIssueSelector(proxySocketConfiguration.appliedNetworkAction, count)
-                                    val response = callTargetServer(
-                                        proxySocketConfiguration.url,
-                                        proxySocketConfiguration.port,
-                                        parsedRequest
-                                    )
-                                    count++
-                                    if (response != null) {
-                                        launch {
-                                            destinationServerResponseData.send(
-                                                HttpDestinationServerResponse(
-                                                    response
-                                                )
-                                            )
-                                        }
-                                    }
-                                    // TODO: forward response to client
-                                } catch (e: NetworkException) {
-                                    count++
-                                    println("Network issue occurred: ${e.message}")
-                                    launch {
-                                        destinationServerResponseData.send(HttpDestinationServerResponse(e.message!!))
-                                    }
-                                } catch (e: Throwable) {
-                                    println("Error handling socket: $e")
-                                } finally {
+                                    proxySocketConfiguration.port.forEach { port ->
                                     try {
-                                        socket.close()
-                                    } catch (closeException: Throwable) {
-                                        println("Error closing socket: $closeException")
+                                        launch {
+                                            incomingHttpData.send(HttpIncomingData(incomingHttpRequest))
+                                        }
+                                        println(port)
+                                        val parsedRequest =
+                                            parseIncomingHttpRequest(incomingHttpRequest)
+                                        networkIssueSelector(proxySocketConfiguration.appliedNetworkAction, count)
+                                        val response = callTargetServer(
+                                            proxySocketConfiguration.url,
+                                            port,
+                                            parsedRequest
+                                        )
+                                        println(response)
+                                        count++
+                                        if (response != null) {
+                                            launch {
+                                                destinationServerResponseData.send(
+                                                    HttpDestinationServerResponse("On port $port: $response"
+                                                    )
+                                                )
+                                            }
+                                        }
+                                        // TODO: forward response to client
+                                    } catch (e: NetworkException) {
+                                        count++
+                                        println("Network issue occurred: ${e.message}")
+                                        launch {
+                                            destinationServerResponseData.send(HttpDestinationServerResponse(e.message!!))
+                                        }
+                                    } catch (e: Throwable) {
+
+//                                        println("Error handling socket: $e")
+                                        launch {
+                                            destinationServerResponseData.send(HttpDestinationServerResponse(e.toString()))
+                                        }
+                                    } finally {
+
+                                        try {
+                                            socket.close()
+                                        } catch (closeException: Throwable) {
+                                            println("Error closing socket: $closeException")
+                                        }
                                     }
                                 }
                             }
