@@ -37,9 +37,9 @@ object KavelagProxyMainSocket {
                     try {
                         val socket = serverSocket?.takeIf { !it.isClosed }?.accept()
                         if (socket != null) {
-                                launch(Dispatchers.IO) {
-                                    val incomingHttpRequest = socket.openReadChannel().readRemaining().readText()
-                                    proxySocketConfiguration.port.forEach { port ->
+                            launch(Dispatchers.IO) {
+                                val incomingHttpRequest = socket.openReadChannel().readRemaining().readText()
+                                proxySocketConfiguration.port.forEach { port ->
                                     try {
                                         launch {
                                             incomingHttpData.send(HttpIncomingData(incomingHttpRequest))
@@ -47,19 +47,24 @@ object KavelagProxyMainSocket {
                                         println(port)
                                         val parsedRequest =
                                             parseIncomingHttpRequest(incomingHttpRequest)
-                                        networkIssueSelector(proxySocketConfiguration.appliedNetworkAction)
-                                        val response = callTargetServer(
-                                            proxySocketConfiguration.url,
-                                            port,
-                                            parsedRequest
-                                        )
-                                        println(response)
-                                        if (response != null) {
-                                            launch {
-                                                destinationServerResponseData.send(
-                                                    HttpDestinationServerResponse("On port $port: $response"
+                                        val isNetworkIssueSupplied =
+                                            networkIssueSelector(proxySocketConfiguration.appliedNetworkAction)
+
+                                        if (isNetworkIssueSupplied) {
+                                            val response = callTargetServer(
+                                                proxySocketConfiguration.url,
+                                                port,
+                                                parsedRequest
+                                            )
+                                            println(response)
+                                            if (response != null) {
+                                                launch {
+                                                    destinationServerResponseData.send(
+                                                        HttpDestinationServerResponse(
+                                                            "On port $port: $response"
+                                                        )
                                                     )
-                                                )
+                                                }
                                             }
                                         }
                                         // TODO: forward response to client
