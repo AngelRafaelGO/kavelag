@@ -390,6 +390,10 @@ fun App(kavelagScope: CoroutineScope) {
                         onValueChange = { newValue ->
                             viewModel.LatencyParam = newValue
                         },
+                        secondValue = viewModel.LatencyParam2,
+                        onSecondValueChange = { newValue ->
+                            viewModel.LatencyParam2 = newValue
+                        },
                     )
                     FunctionBox(
                         "Random Fail",
@@ -494,6 +498,8 @@ fun FunctionBox(
     isProxyRunning: Boolean,
     value: String? = null,
     onValueChange: ((String) -> Unit)? = null,
+    secondValue: String? = null,
+    onSecondValueChange: ((String) -> Unit)? = null,
     valueBool: Boolean? = null,
     onValueBoolChange: ((Boolean) -> Unit)? = null
 ) {
@@ -554,26 +560,72 @@ fun FunctionBox(
                 modifier = Modifier.padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                if (name == "Latency" && value != null && onValueChange != null) {
-                    Text(
-                        text = "Params",
-                        fontSize = 12.sp,
-                        modifier = Modifier.padding(end = 10.dp)
-                    )
+                if (name == "Latency" && value != null && onValueChange != null && secondValue != null && onSecondValueChange != null) {
+                    Row(
+                        modifier = Modifier.weight(0.5f),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Connect",
+                            fontSize = 12.sp,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(end = 5.dp)
+                                .width(55.dp),
+                        )
 
-                    CustomTextField(
-                        value = value,
-                        onValueChange = onValueChange,
-                        enabled = !isProxyRunning && (FunctionAlreadySelected == name || FunctionAlreadySelected == ""),
-                        typeNumber = true,
-                        modifier = Modifier
-                            .background(MaterialTheme.colors.surface)
-                            .border(0.5.dp, Color.Gray, RoundedCornerShape(3.dp))
-                            .fillMaxWidth(0.8f)
-                            .height(22.dp),
-                        fontSize = 15.sp,
-                        placeholderText = ""
-                    )
+                        CustomTextField(
+                            value = value,
+                            placeholderText = "",
+                            onValueChange = onValueChange,
+                            enabled = !isProxyRunning && (FunctionAlreadySelected == name || FunctionAlreadySelected == ""),
+                            typeNumber = true,
+                            modifier = Modifier
+                                .background(MaterialTheme.colors.surface)
+                                .border(0.5.dp, Color.Gray, RoundedCornerShape(3.dp))
+                                .weight(1f)
+                                .height(22.dp),
+                            fontSize = 15.sp,
+                        )
+                        Text(
+                            text = "ms",
+                            fontSize = 8.sp,
+                            modifier = Modifier.padding(start = 5.dp, end = 5.dp)
+                        )
+                    }
+
+                    Row(
+                        modifier = Modifier.weight(0.5f),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Response",
+                            fontSize = 12.sp,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .padding(end = 5.dp)
+                                .width(55.dp),
+                        )
+
+                        CustomTextField(
+                            value = secondValue,
+                            placeholderText = "",
+                            onValueChange = onSecondValueChange,
+                            enabled = !isProxyRunning && (FunctionAlreadySelected == name || FunctionAlreadySelected == ""),
+                            typeNumber = true,
+                            modifier = Modifier
+                                .background(MaterialTheme.colors.surface)
+                                .border(0.5.dp, Color.Gray, RoundedCornerShape(3.dp))
+                                .weight(1f)
+                                .height(22.dp),
+                            fontSize = 15.sp,
+
+                            )
+                        Text(
+                            text = "ms",
+                            fontSize = 8.sp,
+                            modifier = Modifier.padding(start = 5.dp)
+                        )
+                    }
                 } else if ((name == "Random Fail" || name == "Network Error") && valueBool != null && onValueBoolChange != null) {
                     Checkbox(
                         checked = valueBool,
