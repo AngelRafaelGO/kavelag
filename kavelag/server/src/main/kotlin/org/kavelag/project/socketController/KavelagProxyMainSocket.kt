@@ -37,45 +37,50 @@ object KavelagProxyMainSocket {
                     try {
                         val socket = serverSocket?.takeIf { !it.isClosed }?.accept()
                         if (socket != null) {
-                            launch(Dispatchers.IO) {
-                                try {
+                                launch(Dispatchers.IO) {
                                     val incomingHttpRequest = socket.openReadChannel().readRemaining().readText()
-                                    launch {
-                                        incomingHttpData.send(HttpIncomingData(incomingHttpRequest))
-                                    }
-                                    val parsedRequest = parseIncomingHttpRequest(incomingHttpRequest)
-
-                                    val isNetworkIssueApplied =
+                                    proxySocketConfiguration.port.forEach { port ->
+                                    try {
+                                        launch {
+                                            incomingHttpData.send(HttpIncomingData(incomingHttpRequest))
+                                        }
+                                        println(port)
+                                        val parsedRequest =
+                                            parseIncomingHttpRequest(incomingHttpRequest)
                                         networkIssueSelector(proxySocketConfiguration.appliedNetworkAction)
-                                    if (isNetworkIssueApplied) {
                                         val response = callTargetServer(
                                             proxySocketConfiguration.url,
-                                            proxySocketConfiguration.port,
+                                            port,
                                             parsedRequest
                                         )
+                                        println(response)
                                         if (response != null) {
                                             launch {
                                                 destinationServerResponseData.send(
-                                                    HttpDestinationServerResponse(
-                                                        response
+                                                    HttpDestinationServerResponse("On port $port: $response"
                                                     )
                                                 )
                                             }
                                         }
                                         // TODO: forward response to client
-                                    }
-                                } catch (e: NetworkException) {
-                                    println("Network issue occurred: ${e.message}")
-                                    launch {
-                                        destinationServerResponseData.send(HttpDestinationServerResponse(e.message!!))
-                                    }
-                                } catch (e: Throwable) {
-                                    println("Error handling socket: $e")
-                                } finally {
-                                    try {
-                                        socket.close()
-                                    } catch (closeException: Throwable) {
-                                        println("Error closing socket: $closeException")
+                                    } catch (e: NetworkException) {
+                                        println("Network issue occurred: ${e.message}")
+                                        launch {
+                                            destinationServerResponseData.send(HttpDestinationServerResponse(e.message!!))
+                                        }
+                                    } catch (e: Throwable) {
+
+//                                        println("Error handling socket: $e")
+                                        launch {
+                                            destinationServerResponseData.send(HttpDestinationServerResponse(e.toString()))
+                                        }
+                                    } finally {
+
+                                        try {
+                                            socket.close()
+                                        } catch (closeException: Throwable) {
+                                            println("Error closing socket: $closeException")
+                                        }
                                     }
                                 }
                             }

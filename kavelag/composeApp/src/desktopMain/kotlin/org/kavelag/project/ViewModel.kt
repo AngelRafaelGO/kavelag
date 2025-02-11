@@ -91,21 +91,24 @@ class AppViewModel {
                         try {
                             if (LatencyParam.isNotEmpty()) {
                                 val proxyConfig = ProxySocketConfiguration(
-                                    Url, portValues[0].toInt(), AppliedNetworkAction("latency", LatencyParam.toInt())
+                                    Url, portValues.mapNotNull { it.toIntOrNull() }.toIntArray()
+                                    , AppliedNetworkAction("latency", LatencyParam.toInt())
                                 )
                                 kavelagScope.launch { startServer(proxyConfig) }
                             }
 
                             if (PackageLossEnabled) {
                                 val proxyConfig = ProxySocketConfiguration(
-                                    Url, portValues[0].toInt(), AppliedNetworkAction("1on2")
+                                    Url, portValues.mapNotNull { it.toIntOrNull() }.toIntArray()
+                                    , AppliedNetworkAction("1on2")
                                 )
                                 kavelagScope.launch { startServer(proxyConfig) }
                             }
 
                             if (NetworkErrorEnabled) {
                                 val proxyConfig = ProxySocketConfiguration(
-                                    Url, portValues[0].toInt(), AppliedNetworkAction("noNetwork")
+                                    Url, portValues.mapNotNull { it.toIntOrNull() }.toIntArray()
+                                    , AppliedNetworkAction("noNetwork")
                                 )
                                 kavelagScope.launch { startServer(proxyConfig) }
                             }
