@@ -39,14 +39,38 @@ object KavelagProxyMainSocket {
                         if (socket != null) {
                             launch(Dispatchers.IO) {
                                 try {
-                                    val incomingHttpRequest = socket.openReadChannel().readRemaining().readText()
+                                    val inputChannel = socket.openReadChannel()
+                                    val outputChannel = socket.openWriteChannel(autoFlush = true)
+                                    val requestBuilder = StringBuilder()
+                                    var line: String?
+                                    var contentLength = 0
+
+                                    while (true) {
+                                        line = inputChannel.readUTF8Line()
+                                        if (line.isNullOrEmpty()) break
+                                        requestBuilder.appendLine(line)
+
+                                        // Check for "Content-Length" in case of POST requests
+                                        if (line.startsWith("Content-Length:", ignoreCase = true)) {
+                                            contentLength = line.split(":")[1].trim().toInt()
+                                        }
+                                    }
+
+                                    var requestBody = ""
+                                    if (contentLength > 0) {
+                                        requestBody = inputChannel.readPacket(contentLength).readText()
+                                    }
+
+                                    val incomingHttpRequest = requestBuilder.toString() + "\n\n" + requestBody
+
                                     launch {
                                         incomingHttpData.send(HttpIncomingData(incomingHttpRequest))
                                     }
-                                    val parsedRequest = parseIncomingHttpRequest(incomingHttpRequest)
 
+                                    val parsedRequest = parseIncomingHttpRequest(incomingHttpRequest)
                                     val isNetworkIssueApplied =
                                         networkIssueSelector(proxySocketConfiguration.appliedNetworkAction)
+
                                     if (isNetworkIssueApplied) {
                                         val response = callTargetServer(
                                             proxySocketConfiguration.url,
@@ -61,8 +85,21 @@ object KavelagProxyMainSocket {
                                                     )
                                                 )
                                             }
+
+                                            val fullResponse = buildString {
+                                                append("HTTP/1.1 200 OK\r\n")
+                                                append("Content-Type: text/plain\r\n")
+                                                append("Content-Length: ${response.toByteArray().size}\r\n")
+                                                append("Connection: close\r\n")
+                                                append("\r\n")
+                                                append(response)
+                                            }
+
+                                            outputChannel.writeStringUtf8(fullResponse)
+                                            outputChannel.flush()
+                                            outputChannel.flushAndClose()
+                                            socket.close()
                                         }
-                                        // TODO: forward response to client
                                     }
                                 } catch (e: NetworkException) {
                                     println("Network issue occurred: ${e.message}")
