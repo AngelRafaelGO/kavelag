@@ -90,6 +90,18 @@ class AppViewModel {
         }
     }
 
+    fun clearResponse() {
+        if (responses.isNotEmpty()) {
+            responses.clear()
+        }
+    }
+
+    fun clearRequest() {
+        if (requests.isNotEmpty()) {
+            requests.clear()
+        }
+    }
+
     fun toggleProxy(kavelagScope: CoroutineScope) {
         if (!isProxyRunning) {
             if (url.isNotEmpty() && portValues.isNotEmpty() && functionAlreadySelected.isNotEmpty()) {
