@@ -65,12 +65,16 @@ suspend fun handleIncomingRequest(
                         socket.close()
                     } else {
                         launch {
-                            SetUserConfigurationChannel.proxyGenericInfoChannel.send(ProxyGenericInfo(NetworkIssueResponses.DESTINATION_SERVER_DO_NOT_RESPOND.message))
+                            SetUserConfigurationChannel.proxyGenericInfoChannel.send(
+                                ProxyGenericInfo(NetworkIssueResponses.DESTINATION_SERVER_DO_NOT_RESPOND.message)
+                            )
                         }
                     }
                 } else {
                     launch {
-                        SetUserConfigurationChannel.proxyGenericInfoChannel.send(ProxyGenericInfo(NetworkIssueResponses.UNREACHABLE_DESTINATION_SERVER.message))
+                        SetUserConfigurationChannel.proxyGenericInfoChannel.send(
+                            ProxyGenericInfo(NetworkIssueResponses.UNREACHABLE_DESTINATION_SERVER.message)
+                        )
                     }
                 }
             } catch (e: Throwable) {
@@ -84,7 +88,9 @@ suspend fun handleIncomingRequest(
             }
         } else {
             launch {
-                SetUserConfigurationChannel.proxyGenericInfoChannel.send(ProxyGenericInfo("Port $port -> ${NetworkIssueResponses.UNAVAILABLE_PORT.message}"))
+                SetUserConfigurationChannel.proxyGenericInfoChannel.send(
+                    ProxyGenericInfo("Port $port -> ${NetworkIssueResponses.UNAVAILABLE_PORT.message}")
+                )
             }
         }
     }
