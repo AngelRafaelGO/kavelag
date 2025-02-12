@@ -10,7 +10,8 @@ import org.kavelag.project.ProxyGenericInfo
 import org.kavelag.project.SetUserConfigurationChannel
 import org.kavelag.project.models.NetworkIssueResponses
 import org.kavelag.project.models.ProxySocketConfiguration
-import org.kavelag.project.network.networkIssueSelector
+import org.kavelag.project.network.networkIssueSelectorOnConnect
+import org.kavelag.project.network.networkIssueSelectorOnRead
 import org.kavelag.project.parser.parseIncomingHttpRequest
 import org.kavelag.project.targetServerProcessing.callTargetServer
 import org.kavelag.project.targetServerProcessing.isPortOpen
@@ -31,7 +32,7 @@ suspend fun handleIncomingRequest(
                 }
 
                 val parsedRequest = parseIncomingHttpRequest(incomingHttpRequest)
-                val isNetworkIssueApplied = networkIssueSelector(proxySocketConfiguration.appliedNetworkAction)
+                val isNetworkIssueApplied = networkIssueSelectorOnConnect(proxySocketConfiguration.appliedNetworkAction)
 
                 if (isNetworkIssueApplied) {
                     val response = callTargetServer(
@@ -39,6 +40,8 @@ suspend fun handleIncomingRequest(
                         port,
                         parsedRequest
                     )
+
+                    networkIssueSelectorOnRead(proxySocketConfiguration.appliedNetworkAction)
 
                     if (response != null) {
                         // TODO: apply connect stage latency

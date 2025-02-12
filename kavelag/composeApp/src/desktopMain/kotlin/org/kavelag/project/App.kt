@@ -86,7 +86,7 @@ fun App(kavelagScope: CoroutineScope) {
                     .fillMaxHeight()
             ) {
                 if (viewModel.showPopUp) {
-                    PopUpHelp(onDismiss = { viewModel.showPopUp = false })
+                    popUpHelp(onDismiss = { viewModel.showPopUp = false })
                 }
                 Column(
                     Modifier
@@ -155,7 +155,7 @@ fun App(kavelagScope: CoroutineScope) {
                                         .verticalScroll(scrollStateRequests)
                                         .padding(start = 10.dp, end = 10.dp),
                                 )
-                                VerticalScrollbar(
+                                verticalScrollbar(
                                     modifier = Modifier.fillMaxHeight(0.95f),
                                     scrollState = scrollStateRequests
                                 )
@@ -230,7 +230,7 @@ fun App(kavelagScope: CoroutineScope) {
                                         )
                                     }
                                 }
-                                VerticalScrollbar(
+                                verticalScrollbar(
                                     modifier = Modifier.fillMaxHeight(0.95f),
                                     scrollState = scrollStateResponses
                                 )
@@ -272,7 +272,7 @@ fun App(kavelagScope: CoroutineScope) {
                                         .padding(end = 10.dp, bottom = 2.dp)
                                         .fillMaxWidth(0.1f)
                                 )
-                                CustomTextField(
+                                customTextField(
                                     value = viewModel.url,
                                     onValueChange = { newValue ->
                                         viewModel.url = newValue
@@ -315,7 +315,7 @@ fun App(kavelagScope: CoroutineScope) {
                                     ) {
                                         for (i in 0 until 3) {
                                             if (index + i < viewModel.number) {
-                                                CustomTextField(
+                                                customTextField(
                                                     value = viewModel.portValues[index + i],
                                                     onValueChange = { newValue ->
                                                         viewModel.portValues[index + i] =
@@ -415,7 +415,7 @@ fun App(kavelagScope: CoroutineScope) {
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
-                    FunctionBox(
+                    functionBox(
                         "Latency",
                         viewModel.functionAlreadySelected,
                         viewModel.isProxyRunning,
@@ -423,8 +423,12 @@ fun App(kavelagScope: CoroutineScope) {
                         onValueChange = { newValue ->
                             viewModel.latencyParam = newValue
                         },
+                        secondValue = viewModel.latencyParam2,
+                        onSecondValueChange = { newValue ->
+                            viewModel.latencyParam2 = newValue
+                        },
                     )
-                    FunctionBox(
+                    functionBox(
                         "Random Fail",
                         viewModel.functionAlreadySelected,
                         viewModel.isProxyRunning,
@@ -433,7 +437,7 @@ fun App(kavelagScope: CoroutineScope) {
                             viewModel.packageLossEnabled = !viewModel.packageLossEnabled
                         },
                     )
-                    FunctionBox(
+                    functionBox(
                         "Network Error",
                         viewModel.functionAlreadySelected,
                         viewModel.isProxyRunning,
@@ -479,5 +483,3 @@ fun App(kavelagScope: CoroutineScope) {
         }
     }
 }
-
-

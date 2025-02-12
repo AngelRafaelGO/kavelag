@@ -4,17 +4,20 @@ import kotlinx.coroutines.delay
 import org.kavelag.project.models.AppliedNetworkAction
 import kotlin.random.Random
 
-suspend fun networkIssueSelector(param: AppliedNetworkAction): Boolean {
-    val action = param.appliedNetworkAction.lowercase().trim()
-
-    println("networkIssueSelector::action: $action, param: $param")
+suspend fun networkIssueSelectorOnConnect(actionToApply: AppliedNetworkAction): Boolean {
+    val action = actionToApply.appliedNetworkAction.lowercase().trim()
     when (action) {
-        "latency" -> networkLatency(param.params!!.toLong())
-        "randomrequestfailure" -> {
-            return Random.nextBoolean()
-        }
-
+        "latency" -> networkLatency(actionToApply.readParam!!.toLong())
+        "randomrequestfailure" -> return Random.nextBoolean()
         "nonetwork" -> return false
+    }
+    return true
+}
+
+suspend fun networkIssueSelectorOnRead(actionToApply: AppliedNetworkAction): Boolean {
+    val action = actionToApply.appliedNetworkAction.lowercase().trim()
+    when (action) {
+        "latency" -> networkLatency(actionToApply.connectParam!!.toLong())
     }
     return true
 }

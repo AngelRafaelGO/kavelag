@@ -2,6 +2,7 @@ package org.kavelag.project
 
 import androidx.compose.runtime.*
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.combine
 import org.kavelag.project.models.AppliedNetworkAction
 import org.kavelag.project.models.ProxySocketConfiguration
 import org.kavelag.project.models.ResponseItem
@@ -12,6 +13,7 @@ class AppViewModel {
     var url by mutableStateOf("")
     val portValues = mutableStateListOf<String>().apply { repeat(1) { add("") } }
     var latencyParam by mutableStateOf("")
+    var latencyParam2 by mutableStateOf("")
     var packageLossEnabled by mutableStateOf(false)
     var networkErrorEnabled by mutableStateOf(false)
     var number by mutableStateOf(1)
@@ -25,10 +27,14 @@ class AppViewModel {
 
     init {
         viewModelScope.launch {
-            snapshotFlow { latencyParam }
-                .collect { value ->
-                    functionAlreadySelected = if (value.isNotEmpty()) "Latency" else ""
-                }
+            combine(
+                snapshotFlow { latencyParam },
+                snapshotFlow { latencyParam2 }
+            ) { param1, param2 ->
+                param1.isNotEmpty() || param2.isNotEmpty()
+            }.collect { hasValue ->
+                functionAlreadySelected = if (hasValue) "Latency" else ""
+            }
         }
 
         viewModelScope.launch {
@@ -108,11 +114,13 @@ class AppViewModel {
                 if (portValues.all { it.isNotEmpty() }) {
                     viewModelScope.launch {
                         try {
-                            if (latencyParam.isNotEmpty()) {
+                            if (latencyParam.isNotEmpty() || latencyParam2.isNotEmpty()) {
+                                val connectParam = latencyParam.toIntOrNull() ?: 0
+                                val readParam = latencyParam2.toIntOrNull() ?: 0
                                 val proxyConfig = ProxySocketConfiguration(
                                     url,
                                     portValues.mapNotNull { it.toIntOrNull() }.toIntArray(),
-                                    AppliedNetworkAction("latency", latencyParam.toInt())
+                                    AppliedNetworkAction("latency", connectParam, readParam)
                                 )
                                 kavelagScope.launch { startServer(proxyConfig) }
                             }

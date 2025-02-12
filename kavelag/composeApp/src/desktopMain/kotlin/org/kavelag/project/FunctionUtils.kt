@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,7 +33,7 @@ import androidx.compose.ui.window.Dialog
 
 
 @Composable
-fun PopUpHelp(onDismiss: () -> Unit) {
+fun popUpHelp(onDismiss: () -> Unit) {
     Dialog(onDismissRequest = onDismiss) {
         Card(
             modifier = Modifier
@@ -71,18 +72,20 @@ fun PopUpHelp(onDismiss: () -> Unit) {
 }
 
 @Composable
-fun FunctionBox(
+fun functionBox(
     name: String,
-    FunctionAlreadySelected: String,
+    functionAlreadySelected: String,
     isProxyRunning: Boolean,
     value: String? = null,
     onValueChange: ((String) -> Unit)? = null,
+    secondValue: String? = null,
+    onSecondValueChange: ((String) -> Unit)? = null,
     valueBool: Boolean? = null,
     onValueBoolChange: ((Boolean) -> Unit)? = null
 ) {
     val expandedState = remember { mutableStateOf(false) }
-    LaunchedEffect(FunctionAlreadySelected) {
-        if (FunctionAlreadySelected != name && FunctionAlreadySelected != "")
+    LaunchedEffect(functionAlreadySelected) {
+        if (functionAlreadySelected != name && functionAlreadySelected != "")
             expandedState.value = false
     }
     Box(
@@ -90,7 +93,7 @@ fun FunctionBox(
             .fillMaxWidth()
             .padding(top = 8.dp, start = 10.dp, end = 10.dp)
             .clickable {
-                if (FunctionAlreadySelected == name || FunctionAlreadySelected == "")
+                if (functionAlreadySelected == name || functionAlreadySelected == "")
                     expandedState.value = !expandedState.value
             }
     ) {
@@ -99,7 +102,7 @@ fun FunctionBox(
                 .fillMaxWidth()
                 .height(40.dp)
                 .background(
-                    if (!isProxyRunning && (FunctionAlreadySelected == name || FunctionAlreadySelected == "")) Color.White else Color.Gray,
+                    if (!isProxyRunning && (functionAlreadySelected == name || functionAlreadySelected == "")) Color.White else Color.Gray,
                     shape = RoundedCornerShape(8.dp)
                 )
                 .border(0.5.dp, Color.Gray, RoundedCornerShape(8.dp))
@@ -137,31 +140,77 @@ fun FunctionBox(
                 modifier = Modifier.padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                if (name == "Latency" && value != null && onValueChange != null) {
-                    Text(
-                        text = "Params",
-                        fontSize = 12.sp,
-                        modifier = Modifier.padding(end = 10.dp)
-                    )
+                if (name == "Latency" && value != null && onValueChange != null && secondValue != null && onSecondValueChange != null) {
+                    Row(
+                        modifier = Modifier.weight(0.5f),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Connect",
+                            fontSize = 12.sp,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(end = 5.dp)
+                                .width(55.dp),
+                        )
 
-                    CustomTextField(
-                        value = value,
-                        onValueChange = onValueChange,
-                        enabled = !isProxyRunning && (FunctionAlreadySelected == name || FunctionAlreadySelected == ""),
-                        typeNumber = true,
-                        modifier = Modifier
-                            .background(MaterialTheme.colors.surface)
-                            .border(0.5.dp, Color.Gray, RoundedCornerShape(3.dp))
-                            .fillMaxWidth(0.8f)
-                            .height(22.dp),
-                        fontSize = 15.sp,
-                        placeholderText = ""
-                    )
+                        customTextField(
+                            value = value,
+                            placeholderText = "",
+                            onValueChange = onValueChange,
+                            enabled = !isProxyRunning && (functionAlreadySelected == name || functionAlreadySelected == ""),
+                            typeNumber = true,
+                            modifier = Modifier
+                                .background(MaterialTheme.colors.surface)
+                                .border(0.5.dp, Color.Gray, RoundedCornerShape(3.dp))
+                                .weight(1f)
+                                .height(22.dp),
+                            fontSize = 15.sp,
+                        )
+                        Text(
+                            text = "ms",
+                            fontSize = 8.sp,
+                            modifier = Modifier.padding(start = 5.dp, end = 5.dp)
+                        )
+                    }
+
+                    Row(
+                        modifier = Modifier.weight(0.5f),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Response",
+                            fontSize = 12.sp,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .padding(end = 5.dp)
+                                .width(55.dp),
+                        )
+
+                        customTextField(
+                            value = secondValue,
+                            placeholderText = "",
+                            onValueChange = onSecondValueChange,
+                            enabled = !isProxyRunning && (functionAlreadySelected == name || functionAlreadySelected == ""),
+                            typeNumber = true,
+                            modifier = Modifier
+                                .background(MaterialTheme.colors.surface)
+                                .border(0.5.dp, Color.Gray, RoundedCornerShape(3.dp))
+                                .weight(1f)
+                                .height(22.dp),
+                            fontSize = 15.sp,
+
+                            )
+                        Text(
+                            text = "ms",
+                            fontSize = 8.sp,
+                            modifier = Modifier.padding(start = 5.dp)
+                        )
+                    }
                 } else if ((name == "Random Fail" || name == "Network Error") && valueBool != null && onValueBoolChange != null) {
                     Checkbox(
                         checked = valueBool,
                         onCheckedChange = onValueBoolChange,
-                        enabled = !isProxyRunning && (FunctionAlreadySelected == name || FunctionAlreadySelected == ""),
+                        enabled = !isProxyRunning && (functionAlreadySelected == name || functionAlreadySelected == ""),
                         modifier = Modifier
                             .height(22.dp),
                     )
@@ -178,7 +227,7 @@ fun FunctionBox(
 }
 
 @Composable
-fun CustomTextField(
+fun customTextField(
     value: String,
     onValueChange: (String) -> Unit,
     enabled: Boolean = true,
@@ -237,7 +286,7 @@ fun CustomTextField(
 }
 
 @Composable
-fun VerticalScrollbar(
+fun verticalScrollbar(
     modifier: Modifier = Modifier,
     scrollState: ScrollState
 ) {
