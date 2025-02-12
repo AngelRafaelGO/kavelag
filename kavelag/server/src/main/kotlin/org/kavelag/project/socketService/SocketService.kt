@@ -31,8 +31,7 @@ suspend fun handleIncomingRequest(
                 }
 
                 val parsedRequest = parseIncomingHttpRequest(incomingHttpRequest)
-                val isNetworkIssueApplied =
-                    networkIssueSelector(proxySocketConfiguration.appliedNetworkAction)
+                val isNetworkIssueApplied = networkIssueSelector(proxySocketConfiguration.appliedNetworkAction)
 
                 if (isNetworkIssueApplied) {
                     val response = callTargetServer(
