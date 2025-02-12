@@ -121,7 +121,7 @@ class AppViewModel {
                                 val proxyConfig = ProxySocketConfiguration(
                                     url,
                                     portValues.mapNotNull { it.toIntOrNull() }.toIntArray(),
-                                    AppliedNetworkAction("1on2")
+                                    AppliedNetworkAction("randomrequestfailure")
                                 )
                                 kavelagScope.launch { startServer(proxyConfig) }
                             }
