@@ -2,7 +2,6 @@ package org.kavelag.project.network
 
 import kotlinx.coroutines.delay
 import org.kavelag.project.models.AppliedNetworkAction
-import org.kavelag.project.models.NetworkException
 import kotlin.random.Random
 
 suspend fun networkIssueSelector(param: AppliedNetworkAction): Boolean {
@@ -15,19 +14,11 @@ suspend fun networkIssueSelector(param: AppliedNetworkAction): Boolean {
             return Random.nextBoolean()
         }
 
-        "nonetwork" -> noNetwork()
+        "nonetwork" -> return false
     }
     return true
 }
 
-private fun noNetwork() {
-    throw NetworkException("No network available")
-}
-
 private suspend fun networkLatency(delay: Long) {
     delay(delay)
-}
-
-fun randomRequestFailure(): Boolean {
-    return Random.nextBoolean()
 }

@@ -8,7 +8,7 @@ import org.kavelag.project.HttpDestinationServerResponse
 import org.kavelag.project.HttpIncomingData
 import org.kavelag.project.ProxyGenericInfo
 import org.kavelag.project.SetUserConfigurationChannel
-import org.kavelag.project.models.NetworkException
+import org.kavelag.project.models.NetworkIssueResponses
 import org.kavelag.project.models.ProxySocketConfiguration
 import org.kavelag.project.network.networkIssueSelector
 import org.kavelag.project.parser.parseIncomingHttpRequest
@@ -65,22 +65,13 @@ suspend fun handleIncomingRequest(
                         socket.close()
                     } else {
                         launch {
-                            SetUserConfigurationChannel.proxyGenericInfoChannel.send(ProxyGenericInfo("The destination server did not respond"))
+                            SetUserConfigurationChannel.proxyGenericInfoChannel.send(ProxyGenericInfo(NetworkIssueResponses.DESTINATION_SERVER_DO_NOT_RESPOND.message))
                         }
                     }
                 } else {
                     launch {
-                        SetUserConfigurationChannel.proxyGenericInfoChannel.send(ProxyGenericInfo("No action was applied to network -> simulating unreachable destination server"))
+                        SetUserConfigurationChannel.proxyGenericInfoChannel.send(ProxyGenericInfo(NetworkIssueResponses.UNREACHABLE_DESTINATION_SERVER.message))
                     }
-                }
-            } catch (e: NetworkException) {
-                println("Network issue occurred: ${e.message}")
-                launch {
-                    SetUserConfigurationChannel.destinationServerResponseDataChannel.send(
-                        HttpDestinationServerResponse(
-                            e.message!!
-                        )
-                    )
                 }
             } catch (e: Throwable) {
                 println("Error handling socket: $e")
@@ -93,7 +84,7 @@ suspend fun handleIncomingRequest(
             }
         } else {
             launch {
-                SetUserConfigurationChannel.proxyGenericInfoChannel.send(ProxyGenericInfo("Port $port -> this port is closed or unavailable"))
+                SetUserConfigurationChannel.proxyGenericInfoChannel.send(ProxyGenericInfo("Port $port -> ${NetworkIssueResponses.UNAVAILABLE_PORT.message}"))
             }
         }
     }
