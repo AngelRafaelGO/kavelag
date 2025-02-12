@@ -23,29 +23,8 @@ suspend fun handleIncomingRequest(
     coroutineScope {
         if (isPortOpen(proxySocketConfiguration.url, port)) {
             try {
-                val inputChannel = socket.openReadChannel()
                 val outputChannel = socket.openWriteChannel(autoFlush = true)
-                val requestBuilder = StringBuilder()
-                var line: String?
-                var contentLength = 0
-                var requestBody = ""
-
-                while (true) {
-                    line = inputChannel.readUTF8Line()
-                    if (line.isNullOrEmpty()) break
-                    requestBuilder.appendLine(line)
-                    // Check for "Content-Length" in case of POST requests
-                    if (line.startsWith("Content-Length:", ignoreCase = true)) {
-                        contentLength = line.split(":")[1].trim().toInt()
-                    }
-                }
-
-                if (contentLength > 0) {
-                    requestBody = inputChannel.readPacket(contentLength).readText()
-                }
-
-                val incomingHttpRequest =
-                    requestBuilder.toString() + (if (requestBody.isNotEmpty()) "\r\n\r\n" else "\n\n") + requestBody
+                val incomingHttpRequest = processIncomingRequestFromSocket(socket)
 
                 launch {
                     SetUserConfigurationChannel.incomingHttpDataChannel.send(HttpIncomingData(incomingHttpRequest))
@@ -61,6 +40,7 @@ suspend fun handleIncomingRequest(
                         port,
                         parsedRequest
                     )
+
                     if (response != null) {
                         // TODO: apply connect stage latency
                         launch {
@@ -70,7 +50,9 @@ suspend fun handleIncomingRequest(
                                 )
                             )
                         }
-                        val fullResponse = buildString {
+
+                        // TODO: refactor to true server response
+                        val serverResponse = buildString {
                             append("HTTP/1.1 200 OK\r\n")
                             append("Content-Type: text/plain\r\n")
                             append("Content-Length: ${response.toByteArray().size}\r\n")
@@ -78,7 +60,7 @@ suspend fun handleIncomingRequest(
                             append("\r\n")
                             append(response)
                         }
-                        outputChannel.writeStringUtf8(fullResponse)
+                        outputChannel.writeStringUtf8(serverResponse)
                         outputChannel.flush()
                         outputChannel.flushAndClose()
                         socket.close()
@@ -116,4 +98,33 @@ suspend fun handleIncomingRequest(
             }
         }
     }
+}
+
+private suspend fun processIncomingRequestFromSocket(socket: Socket): String {
+    val inputChannel = socket.openReadChannel()
+    val requestBuilder = StringBuilder()
+    var line: String?
+    var contentLength = 0
+    var requestBody = ""
+
+    while (true) {
+        line = inputChannel.readUTF8Line()
+
+        if (line.isNullOrEmpty()) break
+        requestBuilder.appendLine(line)
+
+        // Check for "Content-Length" in case of POST requests
+        if (line.startsWith("Content-Length:", ignoreCase = true)) {
+            contentLength = line.split(":")[1].trim().toInt()
+        }
+    }
+
+    if (contentLength > 0) {
+        requestBody = inputChannel.readPacket(contentLength).readText()
+    }
+
+    val incomingHttpRequest =
+        requestBuilder.toString() + (if (requestBody.isNotEmpty()) "\r\n\r\n" else "\n\n") + requestBody
+
+    return incomingHttpRequest
 }

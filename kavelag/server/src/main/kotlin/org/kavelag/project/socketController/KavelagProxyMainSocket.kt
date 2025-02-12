@@ -31,7 +31,6 @@ object KavelagProxyMainSocket {
                         if (socket != null) {
                             launch(Dispatchers.IO) {
                                 proxySocketConfiguration.port.forEach { port ->
-                                    println(port)
                                     handleIncomingRequest(proxySocketConfiguration, port, socket)
                                 }
                             }
