@@ -119,16 +119,21 @@ fun App(kavelagScope: CoroutineScope) {
                                 }
                                 Box(
                                     modifier = Modifier
-                                        .width(40.dp)
+                                        .width(60.dp)
                                         .height(18.dp)
-                                        .background(Color.Green),
+                                        .background(
+                                            Color.DarkGray, shape = RoundedCornerShape(4.dp)
+                                        )
+                                        .clickable {
+                                            viewModel.clearRequest()
+                                        },
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
-                                        text = "Get",
+                                        text = "Clear",
                                         color = Color.White,
                                         fontSize = 10.sp,
-                                        lineHeight = 12.sp,
+                                        lineHeight = 10.sp,
                                     )
                                 }
                             }
@@ -169,36 +174,47 @@ fun App(kavelagScope: CoroutineScope) {
                                         text = "Response",
                                         color = Color.White,
                                         fontSize = 10.sp,
-                                        lineHeight = 12.sp,
+                                        lineHeight = 10.sp,
                                     )
+
                                 }
                                 Box(
                                     modifier = Modifier
-                                        .width(40.dp)
+                                        .width(60.dp)
                                         .height(18.dp)
-                                        .background(Color.Green),
+                                        .background(
+                                            Color.DarkGray, shape = RoundedCornerShape(4.dp)
+                                        )
+                                        .clickable {
+                                            viewModel.clearResponse()
+                                        },
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
-                                        text = "Get",
+                                        text = "Clear",
                                         color = Color.White,
                                         fontSize = 10.sp,
-                                        lineHeight = 12.sp,
+                                        lineHeight = 10.sp,
                                     )
                                 }
                             }
                             Spacer(modifier = Modifier.height(10.dp))
-                            viewModel.responses.forEach { responseItem: ResponseItem ->
-                                Text(
-                                    text = responseItem.textValue,
-                                    color = Color(responseItem.colorValue ?: 0xFFA9A9A9),
-                                    fontSize = 10.sp,
-                                    fontStyle = FontStyle.Italic,
-                                    lineHeight = 12.sp,
-                                    modifier = Modifier
-                                        .verticalScroll(rememberScrollState())
-                                        .padding(start = 10.dp, end = 10.dp),
-                                )
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxHeight(0.95f)
+                                    .verticalScroll(rememberScrollState())
+                            ) {
+                                viewModel.responses.forEach { responseItem: ResponseItem ->
+                                    Text(
+                                        text = responseItem.textValue,
+                                        color = Color(responseItem.colorValue ?: 0xFFA9A9A9),
+                                        fontSize = 10.sp,
+                                        fontStyle = FontStyle.Italic,
+                                        lineHeight = 12.sp,
+                                        modifier = Modifier
+                                            .padding(start = 10.dp, end = 10.dp),
+                                    )
+                                }
                             }
                         }
                     }
