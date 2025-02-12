@@ -4,6 +4,8 @@ import Question_mark
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
@@ -12,10 +14,9 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,6 +36,7 @@ import kotlinx.coroutines.delay
 @Preview
 fun App(kavelagScope: CoroutineScope) {
     val viewModel = remember { AppViewModel() }
+    val url by remember { derivedStateOf { viewModel.Url } }
 
     if (viewModel.showPortLengthError) {
         LaunchedEffect(Unit) {
@@ -68,7 +70,21 @@ fun App(kavelagScope: CoroutineScope) {
                     modifier = Modifier
                         .size(20.dp)
                         .background(Color.DarkGray, shape = RoundedCornerShape(4.dp))
-                        .clickable(onClick = { viewModel.showPopUp = true }),
+                        .clickable(onClick = { viewModel.showPopUpPref = true }),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Settings,
+                        contentDescription = "Preferences",
+                        tint = Color.White
+                    )
+                }
+                Spacer(modifier = Modifier.width(10.dp))
+                Box(
+                    modifier = Modifier
+                        .size(20.dp)
+                        .background(Color.DarkGray, shape = RoundedCornerShape(4.dp))
+                        .clickable(onClick = { viewModel.showPopUpHelp = true }),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -84,8 +100,11 @@ fun App(kavelagScope: CoroutineScope) {
                     .fillMaxWidth()
                     .fillMaxHeight()
             ) {
-                if (viewModel.showPopUp) {
-                    PopUpHelp(onDismiss = { viewModel.showPopUp = false })
+                if (viewModel.showPopUpHelp) {
+                    PopUpHelp(onDismiss = { viewModel.showPopUpHelp = false })
+                }
+                if (viewModel.showPopUpPref) {
+                    PopUpPref(onDismiss = { viewModel.showPopUpPref = false })
                 }
                 Column(
                     Modifier
@@ -114,20 +133,6 @@ fun App(kavelagScope: CoroutineScope) {
                                 ) {
                                     Text(
                                         text = "Request",
-                                        color = Color.White,
-                                        fontSize = 10.sp,
-                                        lineHeight = 12.sp,
-                                    )
-                                }
-                                Box(
-                                    modifier = Modifier
-                                        .width(40.dp)
-                                        .height(18.dp)
-                                        .background(Color.Green),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = "Get",
                                         color = Color.White,
                                         fontSize = 10.sp,
                                         lineHeight = 12.sp,
@@ -169,20 +174,6 @@ fun App(kavelagScope: CoroutineScope) {
                                 ) {
                                     Text(
                                         text = "Response",
-                                        color = Color.White,
-                                        fontSize = 10.sp,
-                                        lineHeight = 12.sp,
-                                    )
-                                }
-                                Box(
-                                    modifier = Modifier
-                                        .width(40.dp)
-                                        .height(18.dp)
-                                        .background(Color.Green),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = "Get",
                                         color = Color.White,
                                         fontSize = 10.sp,
                                         lineHeight = 12.sp,
@@ -240,9 +231,9 @@ fun App(kavelagScope: CoroutineScope) {
                                         .fillMaxWidth(0.1f)
                                 )
                                 CustomTextField(
-                                    value = viewModel.Url,
+                                    value = url,
                                     onValueChange = { newValue ->
-                                        viewModel.Url = newValue
+                                        viewModel.updateUrl(newValue)
                                     },
                                     enabled = !viewModel.isProxyRunning,
                                     typeNumber = false,
@@ -338,27 +329,59 @@ fun App(kavelagScope: CoroutineScope) {
                             }
                         }
                     }
-                    Box(
-                        modifier = Modifier
-                            .size(20.dp)
-                            .background(
-                                if (!viewModel.isProxyRunning) {
-                                    Color.DarkGray
-                                } else {
-                                    Color.Gray
-                                }, shape = RoundedCornerShape(4.dp)
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Row {
+                        Spacer(modifier = Modifier.weight(1f))
+                        Box(
+                            modifier = Modifier
+                                .size(20.dp)
+                                .background(
+                                    if (!viewModel.isProxyRunning) {
+                                        Color.DarkGray
+                                    } else {
+                                        Color.Gray
+                                    }, shape = RoundedCornerShape(4.dp)
+                                )
+                                .clickable {
+                                    viewModel.addPortSlot()
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Add,
+                                contentDescription = "Add icon",
+                                tint = Color.White,
+                                modifier = Modifier.size(12.dp)
                             )
-                            .clickable {
-                                viewModel.addPortSlot()
+                        }
+                        Spacer(modifier = Modifier.width(5.dp))
+                        Button(
+                            modifier = Modifier
+                                .width(80.dp)
+                                .height(20.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                backgroundColor = if (viewModel.isProxyRunning) Color.Red else Color.DarkGray,
+                                contentColor = Color.White
+                            ),
+                            onClick = {
+                                val url = viewModel.Url
+                                val ports = viewModel.portValues
+                                viewModel.savePreferenceSettings(url, ports)
                             },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Add,
-                            contentDescription = "Add icon",
-                            tint = Color.White,
-                            modifier = Modifier.size(12.dp)
-                        )
+                            shape = RoundedCornerShape(4.dp),
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Text(
+
+                                text = "Save params",
+                                fontSize = 8.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier
+                                    .align(Alignment.CenterVertically)
+                                    .fillMaxHeight()
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(10.dp))
                     }
                     if (viewModel.showPortLengthError) {
                         Text(
@@ -429,6 +452,8 @@ fun App(kavelagScope: CoroutineScope) {
                         ),
                         onClick = {
                             viewModel.toggleProxy(kavelagScope)
+                            println(viewModel.Url)
+                            println(viewModel.portValues)
                         },
                         modifier = Modifier
                             .padding(16.dp)
@@ -485,6 +510,112 @@ private fun PopUpHelp(onDismiss: () -> Unit) {
         }
     }
 }
+
+@Composable
+private fun PopUpPref(onDismiss: () -> Unit) {
+    val viewModel = remember { AppViewModel() }
+    val selectedItems = remember { mutableStateListOf<PreferenceSettings>() }
+
+    var allSettings by remember { mutableStateOf(viewModel.getAllPreferenceSettings()) }
+
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth(1f)
+                .padding(16.dp),
+            elevation = 8.dp
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth()
+            ) {
+                Text(
+                    text = "Preferences:",
+                    fontSize = 18.sp,
+                    modifier = Modifier.padding(bottom = 2.dp)
+                )
+
+                Box(modifier = Modifier.weight(1f)) {
+                    LazyColumn(modifier = Modifier.fillMaxWidth()) {
+                        items(allSettings) { setting ->
+                            val isSelected = selectedItems.contains(setting)
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp)
+                                    .clickable {
+                                        if (isSelected) {
+                                            selectedItems.remove(setting)
+                                        } else {
+                                            selectedItems.add(setting)
+                                        }
+                                    }
+                            ) {
+                                Checkbox(
+                                    checked = isSelected,
+                                    onCheckedChange = {
+                                        if (it) selectedItems.add(setting) else selectedItems.remove(setting)
+                                    }
+                                )
+                                Text(
+                                    text = setting.toString(),
+                                    fontSize = 16.sp,
+                                    modifier = Modifier.padding(start = 8.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Button(
+                        onClick = {
+                            viewModel.removePreferenceSettings(selectedItems)
+                            selectedItems.clear()
+
+                            allSettings = viewModel.getAllPreferenceSettings()
+                        },
+                        enabled = selectedItems.isNotEmpty()
+                    ) {
+                        Text("Delete")
+                    }
+
+                    Button(
+                        onClick = {
+                            if (selectedItems.isNotEmpty()) {
+                                val itemToLoad = selectedItems.first()
+
+                                val loadedData = viewModel.loadPreferenceSettings(itemToLoad)
+
+                                if (loadedData != null) {
+                                    val (url, ports) = loadedData
+                                    println("Chargement de l'URL: $url avec les ports: $ports")
+                                    viewModel.Url = url
+                                    println(viewModel.Url)
+                                } else {
+                                    println("La préférence n'a pas été trouvée.")
+                                }
+                            }
+                        },
+                        enabled = selectedItems.size == 1
+                    ) {
+                        Text("Load")
+                    }
+                }
+            }
+        }
+    }
+}
+
+
 
 
 @Composable
