@@ -10,8 +10,10 @@ import kotlinx.coroutines.launch
 import org.kavelag.project.HttpDestinationServerResponse
 import org.kavelag.project.HttpIncomingData
 import org.kavelag.project.KAVELAG_PROXY_PORT
-import org.kavelag.project.SetUserConfigurationChannel.destinationServerResponseData
-import org.kavelag.project.SetUserConfigurationChannel.incomingHttpData
+import org.kavelag.project.ProxyGenericInfo
+import org.kavelag.project.SetUserConfigurationChannel.destinationServerResponseDataChannel
+import org.kavelag.project.SetUserConfigurationChannel.incomingHttpDataChannel
+import org.kavelag.project.SetUserConfigurationChannel.proxyGenericInfoChannel
 import org.kavelag.project.models.NetworkException
 import org.kavelag.project.models.ProxySocketConfiguration
 import org.kavelag.project.network.networkIssueSelector
@@ -66,7 +68,7 @@ object KavelagProxyMainSocket {
                                             val incomingHttpRequest = requestBuilder.toString() + "\n\n" + requestBody
 
                                             launch {
-                                                incomingHttpData.send(HttpIncomingData(incomingHttpRequest))
+                                                incomingHttpDataChannel.send(HttpIncomingData(incomingHttpRequest))
                                             }
 
                                             val parsedRequest = parseIncomingHttpRequest(incomingHttpRequest)
@@ -80,8 +82,9 @@ object KavelagProxyMainSocket {
                                                     parsedRequest
                                                 )
                                                 if (response != null) {
+                                                    // TODO: apply connect stage latency
                                                     launch {
-                                                        destinationServerResponseData.send(
+                                                        destinationServerResponseDataChannel.send(
                                                             HttpDestinationServerResponse(
                                                                 "Port $port -> $response"
                                                             )
@@ -104,7 +107,11 @@ object KavelagProxyMainSocket {
                                         } catch (e: NetworkException) {
                                             println("Network issue occurred: ${e.message}")
                                             launch {
-                                                destinationServerResponseData.send(HttpDestinationServerResponse(e.message!!))
+                                                destinationServerResponseDataChannel.send(
+                                                    HttpDestinationServerResponse(
+                                                        e.message!!
+                                                    )
+                                                )
                                             }
                                         } catch (e: Throwable) {
                                             println("Error handling socket: $e")
@@ -117,11 +124,7 @@ object KavelagProxyMainSocket {
                                         }
                                     } else {
                                         launch {
-                                            destinationServerResponseData.send(
-                                                HttpDestinationServerResponse(
-                                                    "Port $port -> this port is closed or unavailable"
-                                                )
-                                            )
+                                            proxyGenericInfoChannel.send(ProxyGenericInfo("Port $port -> this port is closed or unavailable"))
                                         }
                                     }
                                 }

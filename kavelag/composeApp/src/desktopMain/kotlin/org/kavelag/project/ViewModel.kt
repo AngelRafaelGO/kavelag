@@ -4,43 +4,44 @@ import androidx.compose.runtime.*
 import kotlinx.coroutines.*
 import org.kavelag.project.models.AppliedNetworkAction
 import org.kavelag.project.models.ProxySocketConfiguration
+import org.kavelag.project.models.ResponseItem
 
 class AppViewModel {
 
-    val viewModelScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-    var Url by mutableStateOf("")
+    private val viewModelScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    var url by mutableStateOf("")
     val portValues = mutableStateListOf<String>().apply { repeat(1) { add("") } }
-    var LatencyParam by mutableStateOf("")
-    var PackageLossEnabled by mutableStateOf(false)
-    var NetworkErrorEnabled by mutableStateOf(false)
+    var latencyParam by mutableStateOf("")
+    var packageLossEnabled by mutableStateOf(false)
+    var networkErrorEnabled by mutableStateOf(false)
     var number by mutableStateOf(1)
     var isProxyRunning by mutableStateOf(false)
-    var FunctionAlreadySelected by mutableStateOf("")
+    var functionAlreadySelected by mutableStateOf("")
     var showPortLengthError by mutableStateOf(false)
     var showSendError by mutableStateOf(false)
     var showPopUp by mutableStateOf(false)
     val requests = mutableStateListOf<String>()
-    val responses = mutableStateListOf<String>()
+    val responses = mutableStateListOf<ResponseItem>()
 
     init {
         viewModelScope.launch {
-            snapshotFlow { LatencyParam }
+            snapshotFlow { latencyParam }
                 .collect { value ->
-                    FunctionAlreadySelected = if (value.isNotEmpty()) "Latency" else ""
+                    functionAlreadySelected = if (value.isNotEmpty()) "Latency" else ""
                 }
         }
 
         viewModelScope.launch {
-            snapshotFlow { PackageLossEnabled }
+            snapshotFlow { packageLossEnabled }
                 .collect { isEnabled ->
-                    FunctionAlreadySelected = if (isEnabled) "Random Fail" else ""
+                    functionAlreadySelected = if (isEnabled) "Random Fail" else ""
                 }
         }
 
         viewModelScope.launch {
-            snapshotFlow { NetworkErrorEnabled }
+            snapshotFlow { networkErrorEnabled }
                 .collect { isEnabled ->
-                    FunctionAlreadySelected = if (isEnabled) "Network Error" else ""
+                    functionAlreadySelected = if (isEnabled) "Network Error" else ""
                 }
         }
     }
@@ -50,15 +51,21 @@ class AppViewModel {
     }
 
 
-    suspend fun listenForRequests() {
-        for (request in SetUserConfigurationChannel.incomingHttpData) {
+    private suspend fun listenForRequests() {
+        for (request in SetUserConfigurationChannel.incomingHttpDataChannel) {
             requests.add(request.httpIncomingData)
         }
     }
 
-    suspend fun listenForResponses() {
-        for (response in SetUserConfigurationChannel.destinationServerResponseData) {
-            responses.add(response.httpDestinationServerResponse)
+    private suspend fun listenForResponses() {
+        for (response in SetUserConfigurationChannel.destinationServerResponseDataChannel) {
+            responses.add(ResponseItem(response.httpDestinationServerResponse, null))
+        }
+    }
+
+    private suspend fun listenForProxyGenericInfo() {
+        for (response in SetUserConfigurationChannel.proxyGenericInfoChannel) {
+            responses.add(ResponseItem(response.proxyGenericInfo, 0xFF4B0082))
         }
     }
 
@@ -66,7 +73,7 @@ class AppViewModel {
         if (!isProxyRunning) {
             number--;
             portValues.removeLast();
-            if (showPortLengthError == true) {
+            if (showPortLengthError) {
                 showPortLengthError = false
             }
         }
@@ -85,30 +92,33 @@ class AppViewModel {
 
     fun toggleProxy(kavelagScope: CoroutineScope) {
         if (!isProxyRunning) {
-            if (Url.isNotEmpty() && portValues.isNotEmpty() && FunctionAlreadySelected.isNotEmpty()) {
+            if (url.isNotEmpty() && portValues.isNotEmpty() && functionAlreadySelected.isNotEmpty()) {
                 if (portValues.all { it.isNotEmpty() }) {
                     viewModelScope.launch {
                         try {
-                            if (LatencyParam.isNotEmpty()) {
+                            if (latencyParam.isNotEmpty()) {
                                 val proxyConfig = ProxySocketConfiguration(
-                                    Url, portValues.mapNotNull { it.toIntOrNull() }.toIntArray()
-                                    , AppliedNetworkAction("latency", LatencyParam.toInt())
+                                    url,
+                                    portValues.mapNotNull { it.toIntOrNull() }.toIntArray(),
+                                    AppliedNetworkAction("latency", latencyParam.toInt())
                                 )
                                 kavelagScope.launch { startServer(proxyConfig) }
                             }
 
-                            if (PackageLossEnabled) {
+                            if (packageLossEnabled) {
                                 val proxyConfig = ProxySocketConfiguration(
-                                    Url, portValues.mapNotNull { it.toIntOrNull() }.toIntArray()
-                                    , AppliedNetworkAction("1on2")
+                                    url,
+                                    portValues.mapNotNull { it.toIntOrNull() }.toIntArray(),
+                                    AppliedNetworkAction("1on2")
                                 )
                                 kavelagScope.launch { startServer(proxyConfig) }
                             }
 
-                            if (NetworkErrorEnabled) {
+                            if (networkErrorEnabled) {
                                 val proxyConfig = ProxySocketConfiguration(
-                                    Url, portValues.mapNotNull { it.toIntOrNull() }.toIntArray()
-                                    , AppliedNetworkAction("noNetwork")
+                                    url,
+                                    portValues.mapNotNull { it.toIntOrNull() }.toIntArray(),
+                                    AppliedNetworkAction("noNetwork")
                                 )
                                 kavelagScope.launch { startServer(proxyConfig) }
                             }
@@ -130,5 +140,6 @@ class AppViewModel {
             runBlocking { stopServer() }
         }
         kavelagScope.launch { listenForResponses() }
+        kavelagScope.launch { listenForProxyGenericInfo() }
     }
 }

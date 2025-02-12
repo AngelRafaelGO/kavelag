@@ -1,6 +1,5 @@
 package org.kavelag.project
 
-import Question_mark
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -29,7 +28,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
-
+import org.kavelag.project.models.ResponseItem
 
 @Composable
 @Preview
@@ -48,7 +47,6 @@ fun App(kavelagScope: CoroutineScope) {
             viewModel.showSendError = false
         }
     }
-
     MaterialTheme {
         Column(
             Modifier
@@ -190,18 +188,18 @@ fun App(kavelagScope: CoroutineScope) {
                                 }
                             }
                             Spacer(modifier = Modifier.height(10.dp))
-                            Text(
-                                text = viewModel.responses.joinToString(separator = "\n"),
-                                color = Color.DarkGray,
-                                fontSize = 10.sp,
-                                fontStyle = FontStyle.Italic,
-                                lineHeight = 12.sp,
-                                modifier = Modifier
-                                    .fillMaxHeight(0.95f)
-                                    .verticalScroll(rememberScrollState())
-                                    .padding(start = 10.dp, end = 10.dp),
-                            )
-
+                            viewModel.responses.forEach { responseItem: ResponseItem ->
+                                Text(
+                                    text = responseItem.textValue,
+                                    color = Color(responseItem.colorValue ?: 0xFFA9A9A9),
+                                    fontSize = 10.sp,
+                                    fontStyle = FontStyle.Italic,
+                                    lineHeight = 12.sp,
+                                    modifier = Modifier
+                                        .verticalScroll(rememberScrollState())
+                                        .padding(start = 10.dp, end = 10.dp),
+                                )
+                            }
                         }
                     }
                 }
@@ -240,9 +238,9 @@ fun App(kavelagScope: CoroutineScope) {
                                         .fillMaxWidth(0.1f)
                                 )
                                 CustomTextField(
-                                    value = viewModel.Url,
+                                    value = viewModel.url,
                                     onValueChange = { newValue ->
-                                        viewModel.Url = newValue
+                                        viewModel.url = newValue
                                     },
                                     enabled = !viewModel.isProxyRunning,
                                     typeNumber = false,
@@ -384,29 +382,29 @@ fun App(kavelagScope: CoroutineScope) {
                     )
                     FunctionBox(
                         "Latency",
-                        viewModel.FunctionAlreadySelected,
+                        viewModel.functionAlreadySelected,
                         viewModel.isProxyRunning,
-                        value = viewModel.LatencyParam,
+                        value = viewModel.latencyParam,
                         onValueChange = { newValue ->
-                            viewModel.LatencyParam = newValue
+                            viewModel.latencyParam = newValue
                         },
                     )
                     FunctionBox(
                         "Random Fail",
-                        viewModel.FunctionAlreadySelected,
+                        viewModel.functionAlreadySelected,
                         viewModel.isProxyRunning,
-                        valueBool = viewModel.PackageLossEnabled,
+                        valueBool = viewModel.packageLossEnabled,
                         onValueBoolChange = {
-                            viewModel.PackageLossEnabled = !viewModel.PackageLossEnabled
+                            viewModel.packageLossEnabled = !viewModel.packageLossEnabled
                         },
                     )
                     FunctionBox(
                         "Network Error",
-                        viewModel.FunctionAlreadySelected,
+                        viewModel.functionAlreadySelected,
                         viewModel.isProxyRunning,
-                        valueBool = viewModel.NetworkErrorEnabled,
+                        valueBool = viewModel.networkErrorEnabled,
                         onValueBoolChange = {
-                            viewModel.NetworkErrorEnabled = !viewModel.NetworkErrorEnabled
+                            viewModel.networkErrorEnabled = !viewModel.networkErrorEnabled
                         })
 
                     Spacer(modifier = Modifier.height(20.dp))
@@ -485,7 +483,6 @@ private fun PopUpHelp(onDismiss: () -> Unit) {
         }
     }
 }
-
 
 @Composable
 fun FunctionBox(
