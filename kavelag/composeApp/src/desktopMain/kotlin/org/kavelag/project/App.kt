@@ -31,12 +31,14 @@ import androidx.compose.ui.window.Dialog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 
+var url by mutableStateOf("")
+var portValues = mutableStateListOf<String>().apply { repeat(1) { add("") } }
 
 @Composable
 @Preview
 fun App(kavelagScope: CoroutineScope) {
+
     val viewModel = remember { AppViewModel() }
-    val url by remember { derivedStateOf { viewModel.Url } }
 
     if (viewModel.showPortLengthError) {
         LaunchedEffect(Unit) {
@@ -233,6 +235,7 @@ fun App(kavelagScope: CoroutineScope) {
                                 CustomTextField(
                                     value = url,
                                     onValueChange = { newValue ->
+                                        url = newValue
                                         viewModel.updateUrl(newValue)
                                     },
                                     enabled = !viewModel.isProxyRunning,
@@ -274,8 +277,9 @@ fun App(kavelagScope: CoroutineScope) {
                                         for (i in 0 until 3) {
                                             if (index + i < viewModel.number) {
                                                 CustomTextField(
-                                                    value = viewModel.portValues[index + i],
+                                                    value = portValues[index + i],
                                                     onValueChange = { newValue ->
+                                                        portValues[index + i] = newValue
                                                         viewModel.portValues[index + i] =
                                                             newValue
                                                     },
@@ -343,6 +347,7 @@ fun App(kavelagScope: CoroutineScope) {
                                     }, shape = RoundedCornerShape(4.dp)
                                 )
                                 .clickable {
+                                    portValues.add("")
                                     viewModel.addPortSlot()
                                 },
                             contentAlignment = Alignment.Center
@@ -364,9 +369,7 @@ fun App(kavelagScope: CoroutineScope) {
                                 contentColor = Color.White
                             ),
                             onClick = {
-                                val url = viewModel.Url
-                                val ports = viewModel.portValues
-                                viewModel.savePreferenceSettings(url, ports)
+                                viewModel.savePreferenceSettings(url, portValues)
                             },
                             shape = RoundedCornerShape(4.dp),
                             contentPadding = PaddingValues(0.dp)
@@ -452,8 +455,6 @@ fun App(kavelagScope: CoroutineScope) {
                         ),
                         onClick = {
                             viewModel.toggleProxy(kavelagScope)
-                            println(viewModel.Url)
-                            println(viewModel.portValues)
                         },
                         modifier = Modifier
                             .padding(16.dp)
@@ -596,12 +597,19 @@ private fun PopUpPref(onDismiss: () -> Unit) {
                                 val loadedData = viewModel.loadPreferenceSettings(itemToLoad)
 
                                 if (loadedData != null) {
-                                    val (url, ports) = loadedData
-                                    println("Chargement de l'URL: $url avec les ports: $ports")
-                                    viewModel.Url = url
-                                    println(viewModel.Url)
-                                } else {
-                                    println("La préférence n'a pas été trouvée.")
+                                    val (newUrl, newPorts) = loadedData
+                                    println("Chargement de l'URL: $newUrl avec les ports: $newPorts")
+                                    url = newUrl
+                                    viewModel.updateUrl(newUrl)
+
+                                    newPorts.forEachIndexed { i, port ->
+                                        portValues.add("")
+                                        println("App -->" + portValues)
+                                        println("View Model --> "+ viewModel.portValues)
+                                        portValues[i] = newPorts[i]
+                                        viewModel.addPortSlot()
+                                    }
+                                    viewModel.updatePorts(portValues)
                                 }
                             }
                         },

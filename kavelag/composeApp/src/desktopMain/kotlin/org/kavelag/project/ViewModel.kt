@@ -36,6 +36,9 @@ class AppViewModel {
     fun updateUrl(newUrl: String) {
         Url = newUrl
     }
+    fun updatePorts(newPorts: List<String>) {
+        portValues = newPorts.toMutableStateList()
+    }
 
     init {
         viewModelScope.launch {
@@ -92,6 +95,7 @@ class AppViewModel {
             if (number < 3) {
                 portValues.add("")
                 number++
+                println("ntm compose")
             } else {
                 showPortLengthError = true
             }
