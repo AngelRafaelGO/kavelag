@@ -19,75 +19,84 @@ import org.kavelag.project.targetServerProcessing.isValidUrl
 
 suspend fun handleIncomingRequest(
     proxySocketConfiguration: ProxySocketConfiguration,
-    port: Int,
+//    port: Int,
     socket: Socket
 ) {
     coroutineScope {
-        if (isPortOpen(proxySocketConfiguration.url, port) && isValidUrl(proxySocketConfiguration.url)) {
-            try {
-                val outputChannel = socket.openWriteChannel(autoFlush = true)
-                val incomingHttpRequest = processIncomingRequestFromSocket(socket)
+//        if (isPortOpen(proxySocketConfiguration.url, port) && isValidUrl(proxySocketConfiguration.url)) {
+        try {
+            val outputChannel = socket.openWriteChannel(autoFlush = true)
+            val incomingHttpRequest = processIncomingRequestFromSocket(socket)
 
-                launch {
-                    SetUserConfigurationChannel.incomingHttpDataChannel.send(HttpIncomingData(incomingHttpRequest))
-                }
-
-                val parsedRequest = parseIncomingHttpRequest(incomingHttpRequest)
-                val isNetworkIssueApplied = networkIssueSelectorOnConnect(proxySocketConfiguration.appliedNetworkAction)
-
-                if (isNetworkIssueApplied) {
-                    val targetServerResponse = callTargetServer(
-                        proxySocketConfiguration.url,
-                        port,
-                        parsedRequest
-                    )
-
-                    networkIssueSelectorOnRead(proxySocketConfiguration.appliedNetworkAction)
-
-                    if (targetServerResponse != null) {
-                        // TODO: apply connect stage latency
-                        launch {
-                            SetUserConfigurationChannel.destinationServerResponseDataChannel.send(
-                                HttpDestinationServerResponse(
-                                    "Port $port -> $targetServerResponse"
-                                )
+            proxySocketConfiguration.port.forEach { port ->
+                if (isPortOpen(proxySocketConfiguration.url, port) && isValidUrl(proxySocketConfiguration.url)) {
+                    launch {
+                        SetUserConfigurationChannel.incomingHttpDataChannel.send(
+                            HttpIncomingData(
+                                incomingHttpRequest
                             )
-                        }
+                        )
+                    }
 
-                        outputChannel.writeStringUtf8(targetServerResponse)
-                        outputChannel.flush()
+                    val parsedRequest = parseIncomingHttpRequest(incomingHttpRequest)
+                    val isNetworkIssueApplied =
+                        networkIssueSelectorOnConnect(proxySocketConfiguration.appliedNetworkAction)
+
+                    if (isNetworkIssueApplied) {
+                        val targetServerResponse = callTargetServer(
+                            proxySocketConfiguration.url,
+                            port,
+                            parsedRequest
+                        )
+
+                        networkIssueSelectorOnRead(proxySocketConfiguration.appliedNetworkAction)
+
+                        if (targetServerResponse != null) {
+                            // TODO: apply connect stage latency
+                            launch {
+                                SetUserConfigurationChannel.destinationServerResponseDataChannel.send(
+                                    HttpDestinationServerResponse(
+                                        "Port $port -> $targetServerResponse"
+                                    )
+                                )
+                            }
+
+                            outputChannel.writeStringUtf8(targetServerResponse)
+                            outputChannel.flush()
+                        } else {
+                            launch {
+                                SetUserConfigurationChannel.proxyGenericInfoChannel.send(
+                                    ProxyGenericInfo(NetworkIssueErrorResponses.DESTINATION_SERVER_DID_NOT_RESPOND.message)
+                                )
+                            }
+                        }
                     } else {
                         launch {
                             SetUserConfigurationChannel.proxyGenericInfoChannel.send(
-                                ProxyGenericInfo(NetworkIssueErrorResponses.DESTINATION_SERVER_DID_NOT_RESPOND.message)
+                                ProxyGenericInfo(NetworkIssueErrorResponses.UNREACHABLE_DESTINATION_SERVER.message)
                             )
                         }
                     }
                 } else {
                     launch {
                         SetUserConfigurationChannel.proxyGenericInfoChannel.send(
-                            ProxyGenericInfo(NetworkIssueErrorResponses.UNREACHABLE_DESTINATION_SERVER.message)
+                            ProxyGenericInfo("Port $port -> ${NetworkIssueErrorResponses.UNAVAILABLE_PORT.message} or ${NetworkIssueErrorResponses.INVALIDE_URL.message}")
                         )
                     }
                 }
-            } catch (e: Throwable) {
-                println("Error handling socket: $e")
-            } finally {
-                try {
-                    socket.close()
-                } catch (closeException: Throwable) {
-                    println("Error closing socket: $closeException")
-                }
             }
-        } else {
-            launch {
-                SetUserConfigurationChannel.proxyGenericInfoChannel.send(
-                    ProxyGenericInfo("Port $port -> ${NetworkIssueErrorResponses.UNAVAILABLE_PORT.message} or ${NetworkIssueErrorResponses.INVALIDE_URL.message}")
-                )
+        } catch (e: Throwable) {
+            println("Error handling socket: $e")
+        } finally {
+            try {
+                socket.close()
+            } catch (closeException: Throwable) {
+                println("Error closing socket: $closeException")
             }
-        }
+    }
     }
 }
+
 
 private suspend fun processIncomingRequestFromSocket(socket: Socket): String {
     val inputChannel = socket.openReadChannel()
@@ -98,7 +107,6 @@ private suspend fun processIncomingRequestFromSocket(socket: Socket): String {
 
     while (true) {
         line = inputChannel.readUTF8Line()
-
         if (line.isNullOrEmpty()) break
         requestBuilder.appendLine(line)
 

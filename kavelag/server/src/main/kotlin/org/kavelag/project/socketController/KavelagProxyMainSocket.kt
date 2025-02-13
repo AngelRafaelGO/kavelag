@@ -30,9 +30,9 @@ object KavelagProxyMainSocket {
                         val socket = serverSocket?.takeIf { !it.isClosed }?.accept()
                         if (socket != null) {
                             launch(Dispatchers.IO) {
-                                proxySocketConfiguration.port.forEach { port ->
-                                    handleIncomingRequest(proxySocketConfiguration, port, socket)
-                                }
+//                                proxySocketConfiguration.port.forEach { port ->
+                                    handleIncomingRequest(proxySocketConfiguration, socket)
+//                                }
                             }
                         }
                     } catch (e: ClosedSelectorException) {
