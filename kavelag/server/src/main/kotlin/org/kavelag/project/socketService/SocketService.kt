@@ -19,11 +19,9 @@ import org.kavelag.project.targetServerProcessing.isValidUrl
 
 suspend fun handleIncomingRequest(
     proxySocketConfiguration: ProxySocketConfiguration,
-//    port: Int,
     socket: Socket
 ) {
     coroutineScope {
-//        if (isPortOpen(proxySocketConfiguration.url, port) && isValidUrl(proxySocketConfiguration.url)) {
         try {
             val outputChannel = socket.openWriteChannel(autoFlush = true)
             val incomingHttpRequest = processIncomingRequestFromSocket(socket)
@@ -66,21 +64,21 @@ suspend fun handleIncomingRequest(
                         } else {
                             launch {
                                 SetUserConfigurationChannel.proxyGenericInfoChannel.send(
-                                    ProxyGenericInfo(NetworkIssueErrorResponses.DESTINATION_SERVER_DID_NOT_RESPOND.message)
+                                    ProxyGenericInfo("Port $port -> ${NetworkIssueErrorResponses.DESTINATION_SERVER_DID_NOT_RESPOND.message}")
                                 )
                             }
                         }
                     } else {
                         launch {
                             SetUserConfigurationChannel.proxyGenericInfoChannel.send(
-                                ProxyGenericInfo(NetworkIssueErrorResponses.UNREACHABLE_DESTINATION_SERVER.message)
+                                ProxyGenericInfo("Port $port -> ${NetworkIssueErrorResponses.UNREACHABLE_DESTINATION_SERVER.message}")
                             )
                         }
                     }
                 } else {
                     launch {
                         SetUserConfigurationChannel.proxyGenericInfoChannel.send(
-                            ProxyGenericInfo("Port $port -> ${NetworkIssueErrorResponses.UNAVAILABLE_PORT.message} or ${NetworkIssueErrorResponses.INVALIDE_URL.message}")
+                            ProxyGenericInfo("Port $port -> ${NetworkIssueErrorResponses.UNAVAILABLE_PORT.message} or ${NetworkIssueErrorResponses.INVALID_URL.message}")
                         )
                     }
                 }
