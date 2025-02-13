@@ -39,16 +39,16 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "org.kavelag.project"
+            packageName = "Kavelag"
             packageVersion = "1.0.0"
             macOS {
-                iconFile.set(project.file("logo.png"))
+                iconFile.set(project.file("src/logo.png"))
             }
             windows {
-                iconFile.set(project.file("logo2.ico"))
+                iconFile.set(project.file("src/logo2.ico"))
             }
             linux {
-                iconFile.set(project.file("logo.png"))
+                iconFile.set(project.file("src/logo.png"))
             }
         }
     }
