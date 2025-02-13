@@ -2,11 +2,13 @@ package org.kavelag.project
 
 import androidx.compose.runtime.*
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.combine
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.kavelag.project.models.AppliedNetworkAction
 import org.kavelag.project.models.ProxySocketConfiguration
+import org.kavelag.project.models.ResponseItem
 import java.util.prefs.Preferences
 
 @Serializable
@@ -17,49 +19,46 @@ data class PreferenceSettings(
 
 class AppViewModel {
 
-    val viewModelScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-    var Url = mutableStateOf("")
+    private val viewModelScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    var url by mutableStateOf("")
     var portValues = mutableStateListOf<String>().apply { repeat(1) { add("") } }
-    var LatencyParam by mutableStateOf("")
-    var PackageLossEnabled by mutableStateOf(false)
-    var NetworkErrorEnabled by mutableStateOf(false)
+    var latencyParam by mutableStateOf("")
+    var latencyParam2 by mutableStateOf("")
+    var packageLossEnabled by mutableStateOf(false)
+    var networkErrorEnabled by mutableStateOf(false)
     var number by mutableStateOf(1)
     var isProxyRunning by mutableStateOf(false)
-    var FunctionAlreadySelected by mutableStateOf("")
+    var functionAlreadySelected by mutableStateOf("")
     var showPortLengthError by mutableStateOf(false)
     var showSendError by mutableStateOf(false)
     var showPopUpHelp by mutableStateOf(false)
     var showPopUpPref by mutableStateOf(false)
     val requests = mutableStateListOf<String>()
-    val responses = mutableStateListOf<String>()
-
-    fun updateUrl(newUrl: String) {
-        Url.value = newUrl
-    }
-
-    fun updatePorts(newPorts: List<String>) {
-        portValues = newPorts.toMutableStateList()
-    }
+    val responses = mutableStateListOf<ResponseItem>()
 
     init {
         viewModelScope.launch {
-            snapshotFlow { LatencyParam }
-                .collect { value ->
-                    FunctionAlreadySelected = if (value.isNotEmpty()) "Latency" else ""
+            combine(
+                snapshotFlow { latencyParam },
+                snapshotFlow { latencyParam2 }
+            ) { param1, param2 ->
+                param1.isNotEmpty() || param2.isNotEmpty()
+            }.collect { hasValue ->
+                functionAlreadySelected = if (hasValue) "Latency" else ""
+            }
+        }
+
+        viewModelScope.launch {
+            snapshotFlow { packageLossEnabled }
+                .collect { isEnabled ->
+                    functionAlreadySelected = if (isEnabled) "Random Fail" else ""
                 }
         }
 
         viewModelScope.launch {
-            snapshotFlow { PackageLossEnabled }
+            snapshotFlow { networkErrorEnabled }
                 .collect { isEnabled ->
-                    FunctionAlreadySelected = if (isEnabled) "Random Fail" else ""
-                }
-        }
-
-        viewModelScope.launch {
-            snapshotFlow { NetworkErrorEnabled }
-                .collect { isEnabled ->
-                    FunctionAlreadySelected = if (isEnabled) "Network Error" else ""
+                    functionAlreadySelected = if (isEnabled) "Network Error" else ""
                 }
         }
     }
@@ -69,15 +68,21 @@ class AppViewModel {
     }
 
 
-    suspend fun listenForRequests() {
-        for (request in SetUserConfigurationChannel.incomingHttpData) {
+    private suspend fun listenForRequests() {
+        for (request in SetUserConfigurationChannel.incomingHttpDataChannel) {
             requests.add(request.httpIncomingData)
         }
     }
 
-    suspend fun listenForResponses() {
-        for (response in SetUserConfigurationChannel.destinationServerResponseData) {
-            responses.add(response.httpDestinationServerResponse)
+    private suspend fun listenForResponses() {
+        for (response in SetUserConfigurationChannel.destinationServerResponseDataChannel) {
+            responses.add(ResponseItem(response.httpDestinationServerResponse, null))
+        }
+    }
+
+    private suspend fun listenForProxyGenericInfo() {
+        for (response in SetUserConfigurationChannel.proxyGenericInfoChannel) {
+            responses.add(ResponseItem(response.proxyGenericInfo, 0xFF4B0082))
         }
     }
 
@@ -85,7 +90,7 @@ class AppViewModel {
         if (!isProxyRunning) {
             number--;
             portValues.removeLast();
-            if (showPortLengthError == true) {
+            if (showPortLengthError) {
                 showPortLengthError = false
             }
         }
@@ -96,40 +101,53 @@ class AppViewModel {
             if (number < 3) {
                 portValues.add("")
                 number++
-                println("ntm compose")
             } else {
                 showPortLengthError = true
             }
         }
     }
 
+    fun clearResponse() {
+        if (responses.isNotEmpty()) {
+            responses.clear()
+        }
+    }
+
+    fun clearRequest() {
+        if (requests.isNotEmpty()) {
+            requests.clear()
+        }
+    }
+
     fun toggleProxy(kavelagScope: CoroutineScope) {
         if (!isProxyRunning) {
-            if (Url.value.isNotEmpty() && portValues.isNotEmpty() && FunctionAlreadySelected.isNotEmpty()) {
+            if (url.isNotEmpty() && portValues.isNotEmpty() && functionAlreadySelected.isNotEmpty()) {
                 if (portValues.all { it.isNotEmpty() }) {
                     viewModelScope.launch {
                         try {
-                            if (LatencyParam.isNotEmpty()) {
+                            if (latencyParam.isNotEmpty() || latencyParam2.isNotEmpty()) {
+                                val connectParam = latencyParam.toIntOrNull() ?: 0
+                                val readParam = latencyParam2.toIntOrNull() ?: 0
                                 val proxyConfig = ProxySocketConfiguration(
-                                    Url.value,
+                                    url,
                                     portValues.mapNotNull { it.toIntOrNull() }.toIntArray(),
-                                    AppliedNetworkAction("latency", LatencyParam.toInt())
+                                    AppliedNetworkAction("latency", connectParam, readParam)
                                 )
                                 kavelagScope.launch { startServer(proxyConfig) }
                             }
 
-                            if (PackageLossEnabled) {
+                            if (packageLossEnabled) {
                                 val proxyConfig = ProxySocketConfiguration(
-                                    Url.value,
+                                    url,
                                     portValues.mapNotNull { it.toIntOrNull() }.toIntArray(),
-                                    AppliedNetworkAction("1on2")
+                                    AppliedNetworkAction("randomrequestfailure")
                                 )
                                 kavelagScope.launch { startServer(proxyConfig) }
                             }
 
-                            if (NetworkErrorEnabled) {
+                            if (networkErrorEnabled) {
                                 val proxyConfig = ProxySocketConfiguration(
-                                    Url.value,
+                                    url,
                                     portValues.mapNotNull { it.toIntOrNull() }.toIntArray(),
                                     AppliedNetworkAction("noNetwork")
                                 )
@@ -153,6 +171,7 @@ class AppViewModel {
             runBlocking { stopServer() }
         }
         kavelagScope.launch { listenForResponses() }
+        kavelagScope.launch { listenForProxyGenericInfo() }
     }
 
     private val preferences: Preferences = Preferences.userRoot().node("org.kavelag.project")

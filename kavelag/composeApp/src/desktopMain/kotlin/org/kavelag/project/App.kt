@@ -1,36 +1,43 @@
 package org.kavelag.project
 
-import Question_mark
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
+import org.kavelag.project.models.ResponseItem
 
 @Composable
 @Preview
 fun App(kavelagScope: CoroutineScope) {
-
     val viewModel = remember { AppViewModel() }
+    val scrollStateRequests = rememberScrollState()
+    val scrollStateResponses = rememberScrollState()
+
+    LaunchedEffect(viewModel.responses.size) {
+        scrollStateResponses.animateScrollTo(scrollStateResponses.maxValue)
+    }
+
+    LaunchedEffect(viewModel.requests.size) {
+        scrollStateRequests.animateScrollTo(scrollStateRequests.maxValue)
+    }
 
     if (viewModel.showPortLengthError) {
         LaunchedEffect(Unit) {
@@ -95,10 +102,10 @@ fun App(kavelagScope: CoroutineScope) {
                     .fillMaxHeight()
             ) {
                 if (viewModel.showPopUpHelp) {
-                    PopUpHelp(onDismiss = { viewModel.showPopUpHelp = false })
+                    popUpHelp(onDismiss = { viewModel.showPopUpHelp = false })
                 }
                 if (viewModel.showPopUpPref) {
-                    PopUpPref(viewModel, onDismiss = { viewModel.showPopUpPref = false })
+                    popUpPref(viewModel, onDismiss = { viewModel.showPopUpPref = false })
                 }
                 Column(
                     Modifier
@@ -132,19 +139,46 @@ fun App(kavelagScope: CoroutineScope) {
                                         lineHeight = 12.sp,
                                     )
                                 }
+                                Box(
+                                    modifier = Modifier
+                                        .width(60.dp)
+                                        .height(18.dp)
+                                        .background(
+                                            Color.DarkGray, shape = RoundedCornerShape(4.dp)
+                                        )
+                                        .clickable {
+                                            viewModel.clearRequest()
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "Clear",
+                                        color = Color.White,
+                                        fontSize = 10.sp,
+                                        lineHeight = 10.sp,
+                                    )
+                                }
                             }
                             Spacer(modifier = Modifier.height(10.dp))
-                            Text(
-                                text = viewModel.requests.joinToString(separator = "\n"),
-                                color = Color.DarkGray,
-                                fontSize = 10.sp,
-                                fontStyle = FontStyle.Italic,
-                                lineHeight = 12.sp,
-                                modifier = Modifier
-                                    .fillMaxHeight(0.95f)
-                                    .verticalScroll(rememberScrollState())
-                                    .padding(start = 10.dp, end = 10.dp),
-                            )
+                            Row(
+                                modifier = Modifier.fillMaxHeight(0.95f)
+                            ) {
+                                Text(
+                                    text = viewModel.requests.joinToString(separator = "\n"),
+                                    color = Color.DarkGray,
+                                    fontSize = 10.sp,
+                                    fontStyle = FontStyle.Italic,
+                                    lineHeight = 12.sp,
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .verticalScroll(scrollStateRequests)
+                                        .padding(start = 10.dp, end = 10.dp),
+                                )
+                                verticalScrollbar(
+                                    modifier = Modifier.fillMaxHeight(0.95f),
+                                    scrollState = scrollStateRequests
+                                )
+                            }
                         }
                     }
                     Spacer(modifier = Modifier.height(3.dp))
@@ -170,23 +204,56 @@ fun App(kavelagScope: CoroutineScope) {
                                         text = "Response",
                                         color = Color.White,
                                         fontSize = 10.sp,
-                                        lineHeight = 12.sp,
+                                        lineHeight = 10.sp,
+                                    )
+
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .width(60.dp)
+                                        .height(18.dp)
+                                        .background(
+                                            Color.DarkGray, shape = RoundedCornerShape(4.dp)
+                                        )
+                                        .clickable {
+                                            viewModel.clearResponse()
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "Clear",
+                                        color = Color.White,
+                                        fontSize = 10.sp,
+                                        lineHeight = 10.sp,
                                     )
                                 }
                             }
                             Spacer(modifier = Modifier.height(10.dp))
-                            Text(
-                                text = viewModel.responses.joinToString(separator = "\n"),
-                                color = Color.DarkGray,
-                                fontSize = 10.sp,
-                                fontStyle = FontStyle.Italic,
-                                lineHeight = 12.sp,
-                                modifier = Modifier
-                                    .fillMaxHeight(0.95f)
-                                    .verticalScroll(rememberScrollState())
-                                    .padding(start = 10.dp, end = 10.dp),
-                            )
-
+                            Row(
+                                modifier = Modifier.fillMaxHeight(0.95f)
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .verticalScroll(scrollStateResponses)
+                                ) {
+                                    viewModel.responses.forEach { responseItem: ResponseItem ->
+                                        Text(
+                                            text = responseItem.textValue,
+                                            color = Color(responseItem.colorValue ?: 0xFFA9A9A9),
+                                            fontSize = 10.sp,
+                                            fontStyle = FontStyle.Italic,
+                                            lineHeight = 12.sp,
+                                            modifier = Modifier
+                                                .padding(start = 10.dp, end = 10.dp),
+                                        )
+                                    }
+                                }
+                                verticalScrollbar(
+                                    modifier = Modifier.fillMaxHeight(0.95f),
+                                    scrollState = scrollStateResponses
+                                )
+                            }
                         }
                     }
                 }
@@ -224,10 +291,10 @@ fun App(kavelagScope: CoroutineScope) {
                                         .padding(end = 10.dp, bottom = 2.dp)
                                         .fillMaxWidth(0.1f)
                                 )
-                                CustomTextField(
-                                    value = viewModel.Url.value,
+                                customTextField(
+                                    value = viewModel.url,
                                     onValueChange = { newValue ->
-                                        viewModel.updateUrl(newValue)
+                                        viewModel.url = newValue
                                     },
                                     enabled = !viewModel.isProxyRunning,
                                     typeNumber = false,
@@ -267,10 +334,9 @@ fun App(kavelagScope: CoroutineScope) {
                                     ) {
                                         for (i in 0 until 3) {
                                             if (index + i < viewModel.number) {
-                                                CustomTextField(
+                                                customTextField(
                                                     value = viewModel.portValues[index + i],
                                                     onValueChange = { newValue ->
-                                                        viewModel.portValues[index + i] = newValue
                                                         viewModel.portValues[index + i] =
                                                             newValue
                                                     },
@@ -282,7 +348,11 @@ fun App(kavelagScope: CoroutineScope) {
                                                         .background(
                                                             MaterialTheme.colors.surface,
                                                         )
-                                                        .border(0.5.dp, Color.Gray, shape = RoundedCornerShape(3.dp))
+                                                        .border(
+                                                            0.5.dp,
+                                                            Color.Gray,
+                                                            shape = RoundedCornerShape(3.dp)
+                                                        )
                                                         .weight(1f)
                                                         .height(22.dp),
                                                     fontSize = 14.sp,
@@ -359,7 +429,9 @@ fun App(kavelagScope: CoroutineScope) {
                                 contentColor = Color.White
                             ),
                             onClick = {
-                                viewModel.savePreferenceSettings(viewModel.Url.value, viewModel.portValues)
+                                val url = viewModel.url
+                                val ports = viewModel.portValues
+                                viewModel.savePreferenceSettings(url, ports)
                             },
                             shape = RoundedCornerShape(4.dp),
                             contentPadding = PaddingValues(0.dp)
@@ -398,31 +470,35 @@ fun App(kavelagScope: CoroutineScope) {
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
-                    FunctionBox(
+                    functionBox(
                         "Latency",
-                        viewModel.FunctionAlreadySelected,
+                        viewModel.functionAlreadySelected,
                         viewModel.isProxyRunning,
-                        value = viewModel.LatencyParam,
+                        value = viewModel.latencyParam,
                         onValueChange = { newValue ->
-                            viewModel.LatencyParam = newValue
+                            viewModel.latencyParam = newValue
+                        },
+                        secondValue = viewModel.latencyParam2,
+                        onSecondValueChange = { newValue ->
+                            viewModel.latencyParam2 = newValue
                         },
                     )
-                    FunctionBox(
+                    functionBox(
                         "Random Fail",
-                        viewModel.FunctionAlreadySelected,
+                        viewModel.functionAlreadySelected,
                         viewModel.isProxyRunning,
-                        valueBool = viewModel.PackageLossEnabled,
+                        valueBool = viewModel.packageLossEnabled,
                         onValueBoolChange = {
-                            viewModel.PackageLossEnabled = !viewModel.PackageLossEnabled
+                            viewModel.packageLossEnabled = !viewModel.packageLossEnabled
                         },
                     )
-                    FunctionBox(
+                    functionBox(
                         "Network Error",
-                        viewModel.FunctionAlreadySelected,
+                        viewModel.functionAlreadySelected,
                         viewModel.isProxyRunning,
-                        valueBool = viewModel.NetworkErrorEnabled,
+                        valueBool = viewModel.networkErrorEnabled,
                         onValueBoolChange = {
-                            viewModel.NetworkErrorEnabled = !viewModel.NetworkErrorEnabled
+                            viewModel.networkErrorEnabled = !viewModel.networkErrorEnabled
                         })
 
                     Spacer(modifier = Modifier.height(20.dp))
@@ -461,314 +537,4 @@ fun App(kavelagScope: CoroutineScope) {
             }
         }
     }
-}
-
-@Composable
-private fun PopUpHelp(onDismiss: () -> Unit) {
-    Dialog(onDismissRequest = onDismiss) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth(1f)
-                .padding(16.dp),
-            elevation = 8.dp
-        ) {
-            Column(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .fillMaxWidth()
-            ) {
-                Text(
-                    text = "User Manual for Kavelag:",
-                    fontSize = 18.sp,
-                    fontStyle = FontStyle.Italic,
-                    modifier = Modifier.padding(bottom = 2.dp)
-                )
-                Text(
-                    text = "Connect your application (Client) to our proxy by making a request to the following address: \"http://localhost:9002/\"\n" +
-                            "\n" +
-                            "Next, fill in the following fields on the Kavelag interface: URL, Port, and the desired functionality.\n" +
-                            "\n" +
-                            "There are several types of functionalities:\n" +
-                            "\n" +
-                            "- Latency: Simulates network latency on the path of your request.\n" +
-                            "- Random Fail: Simulates random requests failling.\n" +
-                            "- Network Error: Simulates total network loss during the return path of the request.",
-                    fontSize = 13.sp,
-                    fontStyle = FontStyle.Italic,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun PopUpPref(viewModel: AppViewModel, onDismiss: () -> Unit) {
-    val selectedItems = remember { mutableStateListOf<PreferenceSettings>() }
-    var allSettings by remember { mutableStateOf(viewModel.getAllPreferenceSettings()) }
-
-    Dialog(onDismissRequest = onDismiss) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth(1f)
-                .padding(16.dp),
-            elevation = 8.dp
-        ) {
-            Column(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .fillMaxWidth()
-            ) {
-                Text(
-                    text = "Preferences:",
-                    fontSize = 18.sp,
-                    modifier = Modifier.padding(bottom = 2.dp)
-                )
-
-                Box(modifier = Modifier.weight(1f)) {
-                    LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                        items(allSettings) { setting ->
-                            val isSelected = selectedItems.contains(setting)
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 4.dp)
-                                    .clickable {
-                                        if (isSelected) {
-                                            selectedItems.remove(setting)
-                                        } else {
-                                            selectedItems.add(setting)
-                                        }
-                                    }
-                            ) {
-                                Checkbox(
-                                    checked = isSelected,
-                                    onCheckedChange = {
-                                        if (it) selectedItems.add(setting) else selectedItems.remove(setting)
-                                    }
-                                )
-                                Text(
-                                    text = setting.toString(),
-                                    fontSize = 16.sp,
-                                    modifier = Modifier.padding(start = 8.dp)
-                                )
-                            }
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Button(
-                        onClick = {
-                            viewModel.removePreferenceSettings(selectedItems)
-                            selectedItems.clear()
-
-                            allSettings = viewModel.getAllPreferenceSettings()
-                        },
-                        enabled = selectedItems.isNotEmpty()
-                    ) {
-                        Text("Delete")
-                    }
-
-                    Button(
-                        onClick = {
-                            if (selectedItems.isNotEmpty()) {
-                                val itemToLoad = selectedItems.first()
-
-                                val loadedData = viewModel.loadPreferenceSettings(itemToLoad)
-
-                                if (loadedData != null) {
-                                    viewModel.updateUrl(loadedData.first)
-                                    viewModel.updatePorts(loadedData.second)
-
-                                    loadedData.second.forEachIndexed { i, port ->
-                                        if (i > 0) {
-                                            viewModel.addPortSlot()
-                                        }
-                                    }
-                                    viewModel.updatePorts(loadedData.second)
-                                }
-                            }
-                        },
-                        enabled = selectedItems.size == 1
-                    ) {
-                        Text("Load")
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun FunctionBox(
-    name: String,
-    FunctionAlreadySelected: String,
-    isProxyRunning: Boolean,
-    value: String? = null,
-    onValueChange: ((String) -> Unit)? = null,
-    valueBool: Boolean? = null,
-    onValueBoolChange: ((Boolean) -> Unit)? = null
-) {
-    val expandedState = remember { mutableStateOf(false) }
-    LaunchedEffect(FunctionAlreadySelected) {
-        if (FunctionAlreadySelected != name && FunctionAlreadySelected != "")
-            expandedState.value = false
-    }
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 8.dp, start = 10.dp, end = 10.dp)
-            .clickable {
-                if (FunctionAlreadySelected == name || FunctionAlreadySelected == "")
-                    expandedState.value = !expandedState.value
-            }
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(40.dp)
-                .background(
-                    if (!isProxyRunning && (FunctionAlreadySelected == name || FunctionAlreadySelected == "")) Color.White else Color.Gray,
-                    shape = RoundedCornerShape(8.dp)
-                )
-                .border(0.5.dp, Color.Gray, RoundedCornerShape(8.dp))
-                .padding(horizontal = 16.dp),
-            contentAlignment = Alignment.CenterStart
-        ) {
-            Row(
-                modifier = Modifier.fillMaxSize(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = name,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Icon(
-                    imageVector = if (expandedState.value) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
-                    contentDescription = "Arrow",
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-        }
-    }
-    if (expandedState.value) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = 10.dp, end = 10.dp)
-                .background(Color.White)
-                .border(0.5.dp, Color.Gray, RoundedCornerShape(8.dp)),
-            contentAlignment = Alignment.CenterStart
-        ) {
-            Row(
-                modifier = Modifier.padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                if (name == "Latency" && value != null && onValueChange != null) {
-                    Text(
-                        text = "Params",
-                        fontSize = 12.sp,
-                        modifier = Modifier.padding(end = 10.dp)
-                    )
-
-                    CustomTextField(
-                        value = value,
-                        onValueChange = onValueChange,
-                        enabled = !isProxyRunning && (FunctionAlreadySelected == name || FunctionAlreadySelected == ""),
-                        typeNumber = true,
-                        modifier = Modifier
-                            .background(MaterialTheme.colors.surface)
-                            .border(0.5.dp, Color.Gray, RoundedCornerShape(3.dp))
-                            .fillMaxWidth(0.8f)
-                            .height(22.dp),
-                        fontSize = 15.sp,
-                        placeholderText = ""
-                    )
-                } else if ((name == "Random Fail" || name == "Network Error") && valueBool != null && onValueBoolChange != null) {
-                    Checkbox(
-                        checked = valueBool,
-                        onCheckedChange = onValueBoolChange,
-                        enabled = !isProxyRunning && (FunctionAlreadySelected == name || FunctionAlreadySelected == ""),
-                        modifier = Modifier
-                            .height(22.dp),
-                    )
-
-                    Text(
-                        text = if (valueBool) "Enabled" else "Disabled",
-                        fontSize = 12.sp,
-                        modifier = Modifier.padding(start = 8.dp)
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun CustomTextField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    enabled: Boolean = true,
-    typeNumber: Boolean,
-    modifier: Modifier = Modifier,
-    leadingIcon: (@Composable () -> Unit)? = null,
-    trailingIcon: (@Composable () -> Unit)? = null,
-    placeholderText: String = "Placeholder",
-    fontSize: TextUnit = MaterialTheme.typography.body2.fontSize
-) {
-    BasicTextField(
-        modifier = modifier
-            .background(
-                MaterialTheme.colors.surface,
-                MaterialTheme.shapes.small,
-            )
-            .fillMaxWidth(),
-        enabled = enabled,
-        value = value,
-        onValueChange = { input ->
-            if (!typeNumber || input.all { it.isDigit() }) {
-                onValueChange(input)
-            }
-        },
-        singleLine = true,
-        cursorBrush = SolidColor(MaterialTheme.colors.primary),
-        textStyle = LocalTextStyle.current.copy(
-            color = if (enabled) MaterialTheme.colors.onSurface else Color.Gray,
-            fontSize = fontSize
-        ),
-        decorationBox = { innerTextField ->
-            Row(
-                modifier = Modifier
-                    .padding(start = 5.dp),
-                verticalAlignment = Alignment.CenterVertically
-
-            ) {
-                if (leadingIcon != null) leadingIcon()
-
-                Box(Modifier.weight(1f)) {
-                    if (value.isEmpty()) {
-                        Text(
-                            text = placeholderText,
-                            style = LocalTextStyle.current.copy(
-                                color = MaterialTheme.colors.onSurface.copy(alpha = 0.3f),
-                                fontSize = fontSize
-                            )
-                        )
-                    }
-                    innerTextField()
-                }
-                if (trailingIcon != null) trailingIcon()
-            }
-        }
-    )
 }

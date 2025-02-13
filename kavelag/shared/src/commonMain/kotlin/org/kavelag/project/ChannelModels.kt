@@ -9,3 +9,5 @@ data class HttpIncomingData(val httpIncomingData: String)
 data class HttpDestinationServerResponse(val httpDestinationServerResponse: String)
 
 
+@Serializable
+data class ProxyGenericInfo(val proxyGenericInfo: String)
