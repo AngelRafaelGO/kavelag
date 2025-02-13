@@ -25,10 +25,14 @@ kotlin {
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.coroutines.core)
             implementation(project(":server"))
+            implementation(project(":shared"))
+
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutines.swing)
+            implementation(project(":server"))
+            implementation(project(":shared"))
         }
     }
 }
@@ -42,16 +46,18 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "Kavelag"
-            packageVersion = "1.0.0"
+            packageVersion = "2.0.0"
             macOS {
                 iconFile.set(project.file("src/logo.png"))
             }
             windows {
                 iconFile.set(project.file("src/logo2.ico"))
             }
+
             linux {
                 iconFile.set(project.file("src/logo.png"))
             }
+
         }
     }
 }
