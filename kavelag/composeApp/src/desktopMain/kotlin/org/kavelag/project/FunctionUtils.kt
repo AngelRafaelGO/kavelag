@@ -388,7 +388,8 @@ fun popUpPref(viewModel: AppViewModel, onDismiss: () -> Unit) {
                             if (selectedItems.isNotEmpty()) {
                                 val itemToLoad = selectedItems.first()
                                 val loadedData = viewModel.loadPreferenceSettings(itemToLoad)
-
+                                viewModel.number = 1
+                                viewModel.portValues.clear()
                                 if (loadedData != null) {
                                     viewModel.url = loadedData.first
                                     loadedData.second.forEachIndexed { i, port ->
