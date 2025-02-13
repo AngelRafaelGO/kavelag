@@ -8,13 +8,14 @@ import org.kavelag.project.HttpDestinationServerResponse
 import org.kavelag.project.HttpIncomingData
 import org.kavelag.project.ProxyGenericInfo
 import org.kavelag.project.SetUserConfigurationChannel
-import org.kavelag.project.models.NetworkIssueResponses
+import org.kavelag.project.models.NetworkIssueErrorResponses
 import org.kavelag.project.models.ProxySocketConfiguration
 import org.kavelag.project.network.networkIssueSelectorOnConnect
 import org.kavelag.project.network.networkIssueSelectorOnRead
 import org.kavelag.project.parser.parseIncomingHttpRequest
 import org.kavelag.project.targetServerProcessing.callTargetServer
 import org.kavelag.project.targetServerProcessing.isPortOpen
+import org.kavelag.project.targetServerProcessing.isValidUrl
 
 suspend fun handleIncomingRequest(
     proxySocketConfiguration: ProxySocketConfiguration,
@@ -22,7 +23,7 @@ suspend fun handleIncomingRequest(
     socket: Socket
 ) {
     coroutineScope {
-        if (isPortOpen(proxySocketConfiguration.url, port)) {
+        if (isPortOpen(proxySocketConfiguration.url, port) && isValidUrl(proxySocketConfiguration.url)) {
             try {
                 val outputChannel = socket.openWriteChannel(autoFlush = true)
                 val incomingHttpRequest = processIncomingRequestFromSocket(socket)
@@ -69,14 +70,14 @@ suspend fun handleIncomingRequest(
                     } else {
                         launch {
                             SetUserConfigurationChannel.proxyGenericInfoChannel.send(
-                                ProxyGenericInfo(NetworkIssueResponses.DESTINATION_SERVER_DO_NOT_RESPOND.message)
+                                ProxyGenericInfo(NetworkIssueErrorResponses.DESTINATION_SERVER_DO_NOT_RESPOND.message)
                             )
                         }
                     }
                 } else {
                     launch {
                         SetUserConfigurationChannel.proxyGenericInfoChannel.send(
-                            ProxyGenericInfo(NetworkIssueResponses.UNREACHABLE_DESTINATION_SERVER.message)
+                            ProxyGenericInfo(NetworkIssueErrorResponses.UNREACHABLE_DESTINATION_SERVER.message)
                         )
                     }
                 }
@@ -92,7 +93,7 @@ suspend fun handleIncomingRequest(
         } else {
             launch {
                 SetUserConfigurationChannel.proxyGenericInfoChannel.send(
-                    ProxyGenericInfo("Port $port -> ${NetworkIssueResponses.UNAVAILABLE_PORT.message}")
+                    ProxyGenericInfo("Port $port -> ${NetworkIssueErrorResponses.UNAVAILABLE_PORT.message} or ${NetworkIssueErrorResponses.INVALIDE_URL.message}")
                 )
             }
         }

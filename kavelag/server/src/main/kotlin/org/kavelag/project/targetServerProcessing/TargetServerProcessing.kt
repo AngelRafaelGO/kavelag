@@ -5,6 +5,7 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.network.selector.*
 import io.ktor.network.sockets.*
+import io.netty.util.internal.StringUtil
 import kotlinx.coroutines.Dispatchers
 import org.kavelag.project.httpClient
 import org.kavelag.project.models.HttpRequest
@@ -68,4 +69,10 @@ suspend fun isPortOpen(host: String, port: Int): Boolean {
     } catch (e: Exception) {
         false
     }
+}
+
+fun isValidUrl(url: String): Boolean{
+    val urlRegex : Regex = "^https?://(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}|(?:\\d{1,3}\\.){3}\\d{1,3}$".toRegex()
+    return urlRegex.find(url) != null
+
 }
