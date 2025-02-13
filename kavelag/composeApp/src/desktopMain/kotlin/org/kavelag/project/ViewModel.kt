@@ -2,12 +2,12 @@ package org.kavelag.project
 
 import androidx.compose.runtime.*
 import kotlinx.coroutines.*
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.kavelag.project.models.AppliedNetworkAction
 import org.kavelag.project.models.ProxySocketConfiguration
 import java.util.prefs.Preferences
-import kotlinx.serialization.*
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.Serializable
 
 @Serializable
 data class PreferenceSettings(
@@ -18,7 +18,7 @@ data class PreferenceSettings(
 class AppViewModel {
 
     val viewModelScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-    var Url by mutableStateOf("")
+    var Url = mutableStateOf("")
     var portValues = mutableStateListOf<String>().apply { repeat(1) { add("") } }
     var LatencyParam by mutableStateOf("")
     var PackageLossEnabled by mutableStateOf(false)
@@ -34,8 +34,9 @@ class AppViewModel {
     val responses = mutableStateListOf<String>()
 
     fun updateUrl(newUrl: String) {
-        Url = newUrl
+        Url.value = newUrl
     }
+
     fun updatePorts(newPorts: List<String>) {
         portValues = newPorts.toMutableStateList()
     }
@@ -104,30 +105,33 @@ class AppViewModel {
 
     fun toggleProxy(kavelagScope: CoroutineScope) {
         if (!isProxyRunning) {
-            if (Url.isNotEmpty() && portValues.isNotEmpty() && FunctionAlreadySelected.isNotEmpty()) {
+            if (Url.value.isNotEmpty() && portValues.isNotEmpty() && FunctionAlreadySelected.isNotEmpty()) {
                 if (portValues.all { it.isNotEmpty() }) {
                     viewModelScope.launch {
                         try {
                             if (LatencyParam.isNotEmpty()) {
                                 val proxyConfig = ProxySocketConfiguration(
-                                    Url, portValues.mapNotNull { it.toIntOrNull() }.toIntArray()
-                                    , AppliedNetworkAction("latency", LatencyParam.toInt())
+                                    Url.value,
+                                    portValues.mapNotNull { it.toIntOrNull() }.toIntArray(),
+                                    AppliedNetworkAction("latency", LatencyParam.toInt())
                                 )
                                 kavelagScope.launch { startServer(proxyConfig) }
                             }
 
                             if (PackageLossEnabled) {
                                 val proxyConfig = ProxySocketConfiguration(
-                                    Url, portValues.mapNotNull { it.toIntOrNull() }.toIntArray()
-                                    , AppliedNetworkAction("1on2")
+                                    Url.value,
+                                    portValues.mapNotNull { it.toIntOrNull() }.toIntArray(),
+                                    AppliedNetworkAction("1on2")
                                 )
                                 kavelagScope.launch { startServer(proxyConfig) }
                             }
 
                             if (NetworkErrorEnabled) {
                                 val proxyConfig = ProxySocketConfiguration(
-                                    Url, portValues.mapNotNull { it.toIntOrNull() }.toIntArray()
-                                    , AppliedNetworkAction("noNetwork")
+                                    Url.value,
+                                    portValues.mapNotNull { it.toIntOrNull() }.toIntArray(),
+                                    AppliedNetworkAction("noNetwork")
                                 )
                                 kavelagScope.launch { startServer(proxyConfig) }
                             }
@@ -150,6 +154,7 @@ class AppViewModel {
         }
         kavelagScope.launch { listenForResponses() }
     }
+
     private val preferences: Preferences = Preferences.userRoot().node("org.kavelag.project")
     private val json = Json { prettyPrint = true }
 
@@ -182,6 +187,7 @@ class AppViewModel {
         val updatedListJson = json.encodeToString(currentList)
         preferences.put("preferenceSettingsList", updatedListJson)
     }
+
     fun loadPreferenceSettings(selectedItem: PreferenceSettings): Pair<String, List<String>>? {
         val currentListJson = preferences.get("preferenceSettingsList", "[]")
         val currentList = json.decodeFromString<List<PreferenceSettings>>(currentListJson)

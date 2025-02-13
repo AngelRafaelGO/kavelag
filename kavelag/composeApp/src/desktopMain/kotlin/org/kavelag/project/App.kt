@@ -10,13 +10,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,9 +25,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
-
-var url by mutableStateOf("")
-var portValues = mutableStateListOf<String>().apply { repeat(1) { add("") } }
 
 @Composable
 @Preview
@@ -106,7 +98,7 @@ fun App(kavelagScope: CoroutineScope) {
                     PopUpHelp(onDismiss = { viewModel.showPopUpHelp = false })
                 }
                 if (viewModel.showPopUpPref) {
-                    PopUpPref(onDismiss = { viewModel.showPopUpPref = false })
+                    PopUpPref(viewModel, onDismiss = { viewModel.showPopUpPref = false })
                 }
                 Column(
                     Modifier
@@ -233,9 +225,8 @@ fun App(kavelagScope: CoroutineScope) {
                                         .fillMaxWidth(0.1f)
                                 )
                                 CustomTextField(
-                                    value = url,
+                                    value = viewModel.Url.value,
                                     onValueChange = { newValue ->
-                                        url = newValue
                                         viewModel.updateUrl(newValue)
                                     },
                                     enabled = !viewModel.isProxyRunning,
@@ -277,9 +268,9 @@ fun App(kavelagScope: CoroutineScope) {
                                         for (i in 0 until 3) {
                                             if (index + i < viewModel.number) {
                                                 CustomTextField(
-                                                    value = portValues[index + i],
+                                                    value = viewModel.portValues[index + i],
                                                     onValueChange = { newValue ->
-                                                        portValues[index + i] = newValue
+                                                        viewModel.portValues[index + i] = newValue
                                                         viewModel.portValues[index + i] =
                                                             newValue
                                                     },
@@ -347,7 +338,6 @@ fun App(kavelagScope: CoroutineScope) {
                                     }, shape = RoundedCornerShape(4.dp)
                                 )
                                 .clickable {
-                                    portValues.add("")
                                     viewModel.addPortSlot()
                                 },
                             contentAlignment = Alignment.Center
@@ -369,7 +359,7 @@ fun App(kavelagScope: CoroutineScope) {
                                 contentColor = Color.White
                             ),
                             onClick = {
-                                viewModel.savePreferenceSettings(url, portValues)
+                                viewModel.savePreferenceSettings(viewModel.Url.value, viewModel.portValues)
                             },
                             shape = RoundedCornerShape(4.dp),
                             contentPadding = PaddingValues(0.dp)
@@ -513,10 +503,8 @@ private fun PopUpHelp(onDismiss: () -> Unit) {
 }
 
 @Composable
-private fun PopUpPref(onDismiss: () -> Unit) {
-    val viewModel = remember { AppViewModel() }
+private fun PopUpPref(viewModel: AppViewModel, onDismiss: () -> Unit) {
     val selectedItems = remember { mutableStateListOf<PreferenceSettings>() }
-
     var allSettings by remember { mutableStateOf(viewModel.getAllPreferenceSettings()) }
 
     Dialog(onDismissRequest = onDismiss) {
@@ -597,19 +585,15 @@ private fun PopUpPref(onDismiss: () -> Unit) {
                                 val loadedData = viewModel.loadPreferenceSettings(itemToLoad)
 
                                 if (loadedData != null) {
-                                    val (newUrl, newPorts) = loadedData
-                                    println("Chargement de l'URL: $newUrl avec les ports: $newPorts")
-                                    url = newUrl
-                                    viewModel.updateUrl(newUrl)
+                                    viewModel.updateUrl(loadedData.first)
+                                    viewModel.updatePorts(loadedData.second)
 
-                                    newPorts.forEachIndexed { i, port ->
-                                        portValues.add("")
-                                        println("App -->" + portValues)
-                                        println("View Model --> "+ viewModel.portValues)
-                                        portValues[i] = newPorts[i]
-                                        viewModel.addPortSlot()
+                                    loadedData.second.forEachIndexed { i, port ->
+                                        if (i > 0) {
+                                            viewModel.addPortSlot()
+                                        }
                                     }
-                                    viewModel.updatePorts(portValues)
+                                    viewModel.updatePorts(loadedData.second)
                                 }
                             }
                         },
@@ -622,9 +606,6 @@ private fun PopUpPref(onDismiss: () -> Unit) {
         }
     }
 }
-
-
-
 
 @Composable
 fun FunctionBox(
