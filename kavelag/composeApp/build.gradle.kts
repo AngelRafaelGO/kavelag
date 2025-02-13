@@ -37,25 +37,21 @@ kotlin {
     }
 }
 
-
-
 compose.desktop {
     application {
         mainClass = "org.kavelag.project.MainKt"
-
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "Kavelag"
             packageVersion = "2.0.0"
             macOS {
-                iconFile.set(project.file("src/logo.png"))
+                iconFile.set(project.file("src/logo.ico"))
             }
             windows {
                 iconFile.set(project.file("src/logo2.ico"))
             }
-
             linux {
-                iconFile.set(project.file("src/logo.png"))
+                iconFile.set(project.file("src/logo.ico"))
             }
 
         }
