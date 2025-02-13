@@ -36,7 +36,7 @@ suspend fun handleIncomingRequest(
                 val isNetworkIssueApplied = networkIssueSelectorOnConnect(proxySocketConfiguration.appliedNetworkAction)
 
                 if (isNetworkIssueApplied) {
-                    val response = callTargetServer(
+                    val targetServerResponse = callTargetServer(
                         proxySocketConfiguration.url,
                         port,
                         parsedRequest
@@ -44,33 +44,22 @@ suspend fun handleIncomingRequest(
 
                     networkIssueSelectorOnRead(proxySocketConfiguration.appliedNetworkAction)
 
-                    if (response != null) {
+                    if (targetServerResponse != null) {
                         // TODO: apply connect stage latency
                         launch {
                             SetUserConfigurationChannel.destinationServerResponseDataChannel.send(
                                 HttpDestinationServerResponse(
-                                    "Port $port -> $response"
+                                    "Port $port -> $targetServerResponse"
                                 )
                             )
                         }
 
-                        // TODO: refactor to true server response
-                        val serverResponse = buildString {
-                            append("HTTP/1.1 200 OK\r\n")
-                            append("Content-Type: text/plain\r\n")
-                            append("Content-Length: ${response.toByteArray().size}\r\n")
-                            append("Connection: close\r\n")
-                            append("\r\n")
-                            append(response)
-                        }
-                        outputChannel.writeStringUtf8(serverResponse)
+                        outputChannel.writeStringUtf8(targetServerResponse)
                         outputChannel.flush()
-                        outputChannel.flushAndClose()
-                        socket.close()
                     } else {
                         launch {
                             SetUserConfigurationChannel.proxyGenericInfoChannel.send(
-                                ProxyGenericInfo(NetworkIssueErrorResponses.DESTINATION_SERVER_DO_NOT_RESPOND.message)
+                                ProxyGenericInfo(NetworkIssueErrorResponses.DESTINATION_SERVER_DID_NOT_RESPOND.message)
                             )
                         }
                     }
