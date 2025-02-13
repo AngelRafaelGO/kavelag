@@ -3,15 +3,25 @@ package org.kavelag.project
 import androidx.compose.runtime.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.combine
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.kavelag.project.models.AppliedNetworkAction
 import org.kavelag.project.models.ProxySocketConfiguration
 import org.kavelag.project.models.ResponseItem
+import java.util.prefs.Preferences
+
+@Serializable
+data class PreferenceSettings(
+    val url: String,
+    val ports: List<String>
+)
 
 class AppViewModel {
 
     private val viewModelScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     var url by mutableStateOf("")
-    val portValues = mutableStateListOf<String>().apply { repeat(1) { add("") } }
+    var portValues = mutableStateListOf<String>().apply { repeat(1) { add("") } }
     var latencyParam by mutableStateOf("")
     var latencyParam2 by mutableStateOf("")
     var packageLossEnabled by mutableStateOf(false)
@@ -21,7 +31,8 @@ class AppViewModel {
     var functionAlreadySelected by mutableStateOf("")
     var showPortLengthError by mutableStateOf(false)
     var showSendError by mutableStateOf(false)
-    var showPopUp by mutableStateOf(false)
+    var showPopUpHelp by mutableStateOf(false)
+    var showPopUpPref by mutableStateOf(false)
     val requests = mutableStateListOf<String>()
     val responses = mutableStateListOf<ResponseItem>()
 
@@ -162,4 +173,51 @@ class AppViewModel {
         kavelagScope.launch { listenForResponses() }
         kavelagScope.launch { listenForProxyGenericInfo() }
     }
+
+    private val preferences: Preferences = Preferences.userRoot().node("org.kavelag.project")
+    private val json = Json { prettyPrint = true }
+
+
+    fun savePreferenceSettings(url: String, ports: List<String>) {
+        val preferenceSettings = PreferenceSettings(url, ports)
+
+        val currentListJson = preferences.get("preferenceSettingsList", "[]")
+        val currentList = json.decodeFromString<List<PreferenceSettings>>(currentListJson).toMutableList()
+
+        currentList.add(preferenceSettings)
+
+        val updatedListJson = json.encodeToString(currentList)
+        preferences.put("preferenceSettingsList", updatedListJson)
+
+        println(preferences.get("preferenceSettingsList", null))
+    }
+
+    fun getAllPreferenceSettings(): List<PreferenceSettings> {
+        val listJson = preferences.get("preferenceSettingsList", "[]")
+        return json.decodeFromString(listJson)
+    }
+
+    fun removePreferenceSettings(selectedItems: List<PreferenceSettings>) {
+        val currentListJson = preferences.get("preferenceSettingsList", "[]")
+        val currentList = json.decodeFromString<List<PreferenceSettings>>(currentListJson).toMutableList()
+
+        currentList.removeAll { it in selectedItems }
+
+        val updatedListJson = json.encodeToString(currentList)
+        preferences.put("preferenceSettingsList", updatedListJson)
+    }
+
+    fun loadPreferenceSettings(selectedItem: PreferenceSettings): Pair<String, List<String>>? {
+        val currentListJson = preferences.get("preferenceSettingsList", "[]")
+        val currentList = json.decodeFromString<List<PreferenceSettings>>(currentListJson)
+
+        val preference = currentList.find { it == selectedItem }
+
+        return if (preference != null) {
+            Pair(preference.url, preference.ports)
+        } else {
+            null
+        }
+    }
+
 }

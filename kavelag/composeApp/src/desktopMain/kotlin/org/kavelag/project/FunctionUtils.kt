@@ -5,16 +5,15 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -30,46 +29,6 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-
-
-@Composable
-fun popUpHelp(onDismiss: () -> Unit) {
-    Dialog(onDismissRequest = onDismiss) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth(1f)
-                .padding(16.dp),
-            elevation = 8.dp
-        ) {
-            Column(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .fillMaxWidth()
-            ) {
-                Text(
-                    text = "User Manual for Kavelag:",
-                    fontSize = 18.sp,
-                    fontStyle = FontStyle.Italic,
-                    modifier = Modifier.padding(bottom = 2.dp)
-                )
-                Text(
-                    text = "Connect your application (Client) to our proxy by making a request to the following address: \"http://localhost:9002/\"\n" +
-                            "\n" +
-                            "Next, fill in the following fields on the Kavelag interface: URL, Port, and the desired functionality.\n" +
-                            "\n" +
-                            "There are several types of functionalities:\n" +
-                            "\n" +
-                            "- Latency: Simulates network latency on the path of your request.\n" +
-                            "- Random Fail: Simulates random requests failling.\n" +
-                            "- Network Error: Simulates total network loss during the return path of the request.",
-                    fontSize = 13.sp,
-                    fontStyle = FontStyle.Italic,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-            }
-        }
-    }
-}
 
 @Composable
 fun functionBox(
@@ -307,4 +266,146 @@ fun verticalScrollbar(
                 )
             }
     )
+}
+
+
+@Composable
+fun popUpHelp(onDismiss: () -> Unit) {
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth(1f)
+                .padding(16.dp),
+            elevation = 8.dp
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth()
+            ) {
+                Text(
+                    text = "User Manual for Kavelag:",
+                    fontSize = 18.sp,
+                    fontStyle = FontStyle.Italic,
+                    modifier = Modifier.padding(bottom = 2.dp)
+                )
+                Text(
+                    text = "Connect your application (Client) to our proxy by making a request to the following address: \"http://localhost:9002/\"\n" +
+                            "\n" +
+                            "Next, fill in the following fields on the Kavelag interface: URL, Port, and the desired functionality.\n" +
+                            "\n" +
+                            "There are several types of functionalities:\n" +
+                            "\n" +
+                            "- Latency: Simulates network latency on the path of your request.\n" +
+                            "- Random Fail: Simulates random requests failling.\n" +
+                            "- Network Error: Simulates total network loss during the return path of the request.",
+                    fontSize = 13.sp,
+                    fontStyle = FontStyle.Italic,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun popUpPref(viewModel: AppViewModel, onDismiss: () -> Unit) {
+    val selectedItems = remember { mutableStateListOf<PreferenceSettings>() }
+    var allSettings by remember { mutableStateOf(viewModel.getAllPreferenceSettings()) }
+
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth(1f)
+                .padding(16.dp),
+            elevation = 8.dp
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .fillMaxWidth()
+            ) {
+                Text(
+                    text = "Preferences:",
+                    fontSize = 18.sp,
+                    modifier = Modifier.padding(bottom = 2.dp)
+                )
+
+                Box(modifier = Modifier.weight(1f)) {
+                    LazyColumn(modifier = Modifier.fillMaxWidth()) {
+                        items(allSettings) { setting ->
+                            val isSelected = selectedItems.contains(setting)
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp)
+                                    .clickable {
+                                        if (isSelected) {
+                                            selectedItems.remove(setting)
+                                        } else {
+                                            selectedItems.add(setting)
+                                        }
+                                    }
+                            ) {
+                                Checkbox(
+                                    checked = isSelected,
+                                    onCheckedChange = {
+                                        if (it) selectedItems.add(setting) else selectedItems.remove(setting)
+                                    }
+                                )
+                                Text(
+                                    text = setting.toString(),
+                                    fontSize = 16.sp,
+                                    modifier = Modifier.padding(start = 8.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Button(
+                        onClick = {
+                            viewModel.removePreferenceSettings(selectedItems)
+                            selectedItems.clear()
+
+                            allSettings = viewModel.getAllPreferenceSettings()
+                        },
+                        enabled = selectedItems.isNotEmpty()
+                    ) {
+                        Text("Delete")
+                    }
+
+                    Button(
+                        onClick = {
+                            if (selectedItems.isNotEmpty()) {
+                                val itemToLoad = selectedItems.first()
+                                val loadedData = viewModel.loadPreferenceSettings(itemToLoad)
+
+                                if (loadedData != null) {
+                                    viewModel.url = loadedData.first
+                                    loadedData.second.forEachIndexed { i, port ->
+                                        if (i > 0) {
+                                            viewModel.addPortSlot()
+                                        }
+                                    }
+                                    viewModel.portValues = loadedData.second.toMutableStateList()
+                                }
+                            }
+                        },
+                        enabled = selectedItems.size == 1
+                    ) {
+                        Text("Load")
+                    }
+                }
+            }
+        }
+    }
 }

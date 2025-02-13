@@ -8,6 +8,7 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -50,6 +51,7 @@ fun App(kavelagScope: CoroutineScope) {
             viewModel.showSendError = false
         }
     }
+
     MaterialTheme {
         Column(
             Modifier
@@ -69,7 +71,21 @@ fun App(kavelagScope: CoroutineScope) {
                     modifier = Modifier
                         .size(20.dp)
                         .background(Color.DarkGray, shape = RoundedCornerShape(4.dp))
-                        .clickable(onClick = { viewModel.showPopUp = true }),
+                        .clickable(onClick = { viewModel.showPopUpPref = true }),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Settings,
+                        contentDescription = "Preferences",
+                        tint = Color.White
+                    )
+                }
+                Spacer(modifier = Modifier.width(10.dp))
+                Box(
+                    modifier = Modifier
+                        .size(20.dp)
+                        .background(Color.DarkGray, shape = RoundedCornerShape(4.dp))
+                        .clickable(onClick = { viewModel.showPopUpHelp = true }),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -85,8 +101,11 @@ fun App(kavelagScope: CoroutineScope) {
                     .fillMaxWidth()
                     .fillMaxHeight()
             ) {
-                if (viewModel.showPopUp) {
-                    popUpHelp(onDismiss = { viewModel.showPopUp = false })
+                if (viewModel.showPopUpHelp) {
+                    popUpHelp(onDismiss = { viewModel.showPopUpHelp = false })
+                }
+                if (viewModel.showPopUpPref) {
+                    popUpPref(viewModel, onDismiss = { viewModel.showPopUpPref = false })
                 }
                 Column(
                     Modifier
@@ -329,7 +348,11 @@ fun App(kavelagScope: CoroutineScope) {
                                                         .background(
                                                             MaterialTheme.colors.surface,
                                                         )
-                                                        .border(0.5.dp, Color.Gray, shape = RoundedCornerShape(3.dp))
+                                                        .border(
+                                                            0.5.dp,
+                                                            Color.Gray,
+                                                            shape = RoundedCornerShape(3.dp)
+                                                        )
                                                         .weight(1f)
                                                         .height(22.dp),
                                                     fontSize = 14.sp,
@@ -371,27 +394,59 @@ fun App(kavelagScope: CoroutineScope) {
                             }
                         }
                     }
-                    Box(
-                        modifier = Modifier
-                            .size(20.dp)
-                            .background(
-                                if (!viewModel.isProxyRunning) {
-                                    Color.DarkGray
-                                } else {
-                                    Color.Gray
-                                }, shape = RoundedCornerShape(4.dp)
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Row {
+                        Spacer(modifier = Modifier.weight(1f))
+                        Box(
+                            modifier = Modifier
+                                .size(20.dp)
+                                .background(
+                                    if (!viewModel.isProxyRunning) {
+                                        Color.DarkGray
+                                    } else {
+                                        Color.Gray
+                                    }, shape = RoundedCornerShape(4.dp)
+                                )
+                                .clickable {
+                                    viewModel.addPortSlot()
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Add,
+                                contentDescription = "Add icon",
+                                tint = Color.White,
+                                modifier = Modifier.size(12.dp)
                             )
-                            .clickable {
-                                viewModel.addPortSlot()
+                        }
+                        Spacer(modifier = Modifier.width(5.dp))
+                        Button(
+                            modifier = Modifier
+                                .width(80.dp)
+                                .height(20.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                backgroundColor = if (viewModel.isProxyRunning) Color.Red else Color.DarkGray,
+                                contentColor = Color.White
+                            ),
+                            onClick = {
+                                val url = viewModel.url
+                                val ports = viewModel.portValues
+                                viewModel.savePreferenceSettings(url, ports)
                             },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Add,
-                            contentDescription = "Add icon",
-                            tint = Color.White,
-                            modifier = Modifier.size(12.dp)
-                        )
+                            shape = RoundedCornerShape(4.dp),
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Text(
+
+                                text = "Save params",
+                                fontSize = 8.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier
+                                    .align(Alignment.CenterVertically)
+                                    .fillMaxHeight()
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(10.dp))
                     }
                     if (viewModel.showPortLengthError) {
                         Text(
