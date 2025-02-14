@@ -45,7 +45,7 @@ compose.desktop {
             packageName = "Kavelag"
             packageVersion = "2.0.0"
             macOS {
-                iconFile.set(project.file("src/logo.ico"))
+                iconFile.set(project.file("src/logo.icns"))
             }
             windows {
                 iconFile.set(project.file("src/logo2.ico"))
