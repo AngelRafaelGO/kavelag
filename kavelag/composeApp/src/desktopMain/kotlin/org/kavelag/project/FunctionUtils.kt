@@ -400,6 +400,7 @@ fun popUpPref(viewModel: AppViewModel, onDismiss: () -> Unit) {
                                     viewModel.portValues = loadedData.second.toMutableStateList()
                                 }
                             }
+                            viewModel.showPopUpPref = false
                         },
                         enabled = selectedItems.size == 1
                     ) {
