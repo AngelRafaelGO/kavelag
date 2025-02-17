@@ -50,7 +50,7 @@ suspend fun handleIncomingRequest(
                         networkIssueSelectorOnRead(proxySocketConfiguration.appliedNetworkAction)
 
                         if (targetServerResponse != null) {
-                            // TODO: apply connect stage latency
+                            println("hello")
                             launch {
                                 SetUserConfigurationChannel.destinationServerResponseDataChannel.send(
                                     HttpDestinationServerResponse(
@@ -58,6 +58,9 @@ suspend fun handleIncomingRequest(
                                     )
                                 )
                             }
+
+                            // Print for Cli
+                            println("\n\nServer response: \n$targetServerResponse\n")
 
                             outputChannel.writeStringUtf8(targetServerResponse)
                             outputChannel.flush()
@@ -91,7 +94,7 @@ suspend fun handleIncomingRequest(
             } catch (closeException: Throwable) {
                 println("Error closing socket: $closeException")
             }
-    }
+        }
     }
 }
 
