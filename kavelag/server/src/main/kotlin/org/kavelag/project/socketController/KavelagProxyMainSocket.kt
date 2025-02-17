@@ -22,6 +22,7 @@ object KavelagProxyMainSocket {
         isStopping = false
         selectorManager = ActorSelectorManager(Dispatchers.IO)
         serverSocket = aSocket(selectorManager!!).tcp().bind(port = KAVELAG_PROXY_PORT)
+
         try {
             println("Socket started on port $KAVELAG_PROXY_PORT")
             coroutineScope {
@@ -30,7 +31,7 @@ object KavelagProxyMainSocket {
                         val socket = serverSocket?.takeIf { !it.isClosed }?.accept()
                         if (socket != null) {
                             launch(Dispatchers.IO) {
-                                    handleIncomingRequest(proxySocketConfiguration, socket)
+                                handleIncomingRequest(proxySocketConfiguration, socket)
 
                             }
                         }

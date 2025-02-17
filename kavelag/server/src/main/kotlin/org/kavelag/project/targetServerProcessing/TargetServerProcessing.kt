@@ -85,5 +85,4 @@ suspend fun isPortOpen(host: String, port: Int): Boolean {
 fun isValidUrl(url: String): Boolean {
     val urlRegex: Regex = "^https?://(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,}|(?:\\d{1,3}\\.){3}\\d{1,3}$".toRegex()
     return urlRegex.find(url) != null
-
 }

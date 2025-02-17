@@ -50,7 +50,6 @@ suspend fun handleIncomingRequest(
                         networkIssueSelectorOnRead(proxySocketConfiguration.appliedNetworkAction)
 
                         if (targetServerResponse != null) {
-                            // TODO: apply connect stage latency
                             launch {
                                 SetUserConfigurationChannel.destinationServerResponseDataChannel.send(
                                     HttpDestinationServerResponse(
@@ -91,10 +90,9 @@ suspend fun handleIncomingRequest(
             } catch (closeException: Throwable) {
                 println("Error closing socket: $closeException")
             }
-    }
+        }
     }
 }
-
 
 private suspend fun processIncomingRequestFromSocket(socket: Socket): String {
     val inputChannel = socket.openReadChannel()

@@ -7,4 +7,3 @@ data class AppliedNetworkAction(
 )
 
 data class ProxySocketConfiguration(val url: String, val port: IntArray, val appliedNetworkAction: AppliedNetworkAction)
-
