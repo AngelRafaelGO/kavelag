@@ -35,6 +35,8 @@ class AppViewModel {
     var showPopUpPref by mutableStateOf(false)
     val requests = mutableStateListOf<String>()
     val responses = mutableStateListOf<ResponseItem>()
+    private val preferences: Preferences = Preferences.userRoot().node("org.kavelag.project")
+    private val json = Json { prettyPrint = true }
 
     init {
         viewModelScope.launch {
@@ -174,8 +176,6 @@ class AppViewModel {
         kavelagScope.launch { listenForProxyGenericInfo() }
     }
 
-    private val preferences: Preferences = Preferences.userRoot().node("org.kavelag.project")
-    private val json = Json { prettyPrint = true }
 
 
     fun savePreferenceSettings(url: String, ports: List<String>) {

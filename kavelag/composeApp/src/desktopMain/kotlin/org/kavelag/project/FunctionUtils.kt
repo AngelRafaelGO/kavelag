@@ -354,7 +354,10 @@ fun popUpPref(viewModel: AppViewModel, onDismiss: () -> Unit) {
                                     }
                                 )
                                 Text(
-                                    text = setting.toString(),
+                                    text = """
+            URL: ${setting.url}
+            Ports: ${setting.ports.joinToString(", ")}
+        """.trimIndent(),
                                     fontSize = 16.sp,
                                     modifier = Modifier.padding(start = 8.dp)
                                 )
