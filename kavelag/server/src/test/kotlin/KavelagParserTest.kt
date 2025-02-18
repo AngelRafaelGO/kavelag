@@ -1,5 +1,5 @@
-import org.junit.Test
 import org.kavelag.project.parser.parseIncomingHttpRequest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class KavelagParserTest {

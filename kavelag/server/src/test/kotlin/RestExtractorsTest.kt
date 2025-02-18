@@ -1,6 +1,6 @@
-import org.junit.Test
 import org.junit.jupiter.api.Assertions
 import org.kavelag.project.parser.*
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class RestExtractorsTest() {
