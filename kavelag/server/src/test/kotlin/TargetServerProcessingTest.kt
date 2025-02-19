@@ -2,8 +2,9 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
-import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.test.runTest
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.kavelag.project.models.HttpRequest
 import org.kavelag.project.targetServerProcessing.callTargetServer
 import org.kavelag.project.targetServerProcessing.getMethod
@@ -12,10 +13,21 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class TargetServerProcessingTest {
-    @Test
-    fun shouldReturnTrueIfValidURL() {
+    @ParameterizedTest
+    @CsvSource(
+        "http://mysiteurl.com, true",
+        "https://google.com, true",
+        "http://sub.domain.com/path, true",
+        "ftp://invalid.com, false",
+        "htp://wrong.com, false",
+        "http://, false",
+        "invalid_url, false",
+        "https://192.168.1.1, true",
+//        "http://localhost:8080, true"
+    )
+    fun shouldValidateUrls(inputUrl: String, expectedResult: Boolean) {
         // ACT & ASSERT
-        assertTrue(isValidUrl("http://mysiteurl.com"))
+        assertEquals(expectedResult, isValidUrl(inputUrl))
     }
 
     @Test
