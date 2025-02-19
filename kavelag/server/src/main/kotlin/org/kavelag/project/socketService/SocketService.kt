@@ -16,6 +16,7 @@ import org.kavelag.project.parser.parseIncomingHttpRequest
 import org.kavelag.project.targetServerProcessing.callTargetServer
 import org.kavelag.project.targetServerProcessing.isPortOpen
 import org.kavelag.project.targetServerProcessing.isValidUrl
+import kotlin.time.measureTime
 
 suspend fun handleIncomingRequest(
     proxySocketConfiguration: ProxySocketConfiguration,
@@ -41,19 +42,21 @@ suspend fun handleIncomingRequest(
                         networkIssueSelectorOnConnect(proxySocketConfiguration.appliedNetworkAction)
 
                     if (isNetworkIssueApplied) {
-                        val targetServerResponse = callTargetServer(
-                            proxySocketConfiguration.url,
-                            port,
-                            parsedRequest
-                        )
-
-                        networkIssueSelectorOnRead(proxySocketConfiguration.appliedNetworkAction)
+                        val targetServerResponse: String?
+                        val timer = measureTime {
+                            targetServerResponse = callTargetServer(
+                                proxySocketConfiguration.url,
+                                port,
+                                parsedRequest
+                            )
+                            networkIssueSelectorOnRead(proxySocketConfiguration.appliedNetworkAction)
+                        }.toString()
 
                         if (targetServerResponse != null) {
                             launch {
                                 SetUserConfigurationChannel.destinationServerResponseDataChannel.send(
                                     HttpDestinationServerResponse(
-                                        "Port $port -> $targetServerResponse"
+                                        "Port $port -> $targetServerResponse (Time: ${timer} ms)"
                                     )
                                 )
                             }
