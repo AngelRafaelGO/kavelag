@@ -25,4 +25,6 @@ dependencies {
     implementation("io.ktor:ktor-client-cio-jvm:3.0.2")
     testImplementation(libs.ktor.server.tests)
     testImplementation(libs.kotlin.test.junit)
+    testImplementation("io.mockk:mockk:1.13.16")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
 }
