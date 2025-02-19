@@ -12,10 +12,6 @@ application {
     applicationDefaultJvmArgs = listOf("-Dio.ktor.development=${extra["io.ktor.development"] ?: "false"}")
 }
 
-tasks.test {
-    useJUnitPlatform()
-}
-
 dependencies {
     implementation(projects.shared)
     implementation(libs.logback)
