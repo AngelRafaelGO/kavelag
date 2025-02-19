@@ -240,9 +240,18 @@ fun App(kavelagScope: CoroutineScope) {
                                         .weight(1f)
                                         .verticalScroll(scrollStateResponses)
                                 ) {
-                                    viewModel.responses.forEach { responseItem: ResponseItem ->
+                                    viewModel.responses.forEachIndexed { index, responseItem: ResponseItem ->
                                         Text(
                                             text = responseItem.textValue,
+                                            color = Color(responseItem.colorValue ?: 0xFFA9A9A9),
+                                            fontSize = 10.sp,
+                                            fontStyle = FontStyle.Italic,
+                                            lineHeight = 12.sp,
+                                            modifier = Modifier
+                                                .padding(start = 10.dp, end = 10.dp),
+                                        )
+                                        Text(
+                                            text = "Response time : ${viewModel.timeResponse[index]} ms",
                                             color = Color(responseItem.colorValue ?: 0xFFA9A9A9),
                                             fontSize = 10.sp,
                                             fontStyle = FontStyle.Italic,

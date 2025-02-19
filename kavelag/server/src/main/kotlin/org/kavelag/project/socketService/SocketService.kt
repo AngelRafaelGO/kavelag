@@ -39,7 +39,7 @@ suspend fun handleIncomingRequest(
                         networkIssueSelectorOnConnect(proxySocketConfiguration.appliedNetworkAction)
 
                     if (isNetworkIssueApplied) {
-                        var responseTime = measureTimeMillis {
+                        val responseTime = measureTimeMillis {
                             val targetServerResponse = callTargetServer(
                                 proxySocketConfiguration.url,
                                 port,
@@ -65,11 +65,16 @@ suspend fun handleIncomingRequest(
                                         ProxyGenericInfo("Port $port -> ${NetworkIssueErrorResponses.DESTINATION_SERVER_DID_NOT_RESPOND.message}")
                                     )
                                 }
+                                launch {
+                                    SetUserConfigurationChannel.responseTimeChannel.send(
+                                        TimerResponse(timerModule(0))
+                                    )
+                                }
                             }
                         }
                         launch {
                             SetUserConfigurationChannel.responseTimeChannel.send(
-                                TimerResponse(responseTime)
+                                TimerResponse(timerModule(responseTime))
                                 )
                         }
                         println("------------------------------------$responseTime----------------------------")
@@ -79,6 +84,11 @@ suspend fun handleIncomingRequest(
                                 ProxyGenericInfo("Port $port -> ${NetworkIssueErrorResponses.UNREACHABLE_DESTINATION_SERVER.message}")
                             )
                         }
+                        launch {
+                            SetUserConfigurationChannel.responseTimeChannel.send(
+                                TimerResponse(timerModule(0))
+                            )
+                        }
                     }
 
 
@@ -86,6 +96,11 @@ suspend fun handleIncomingRequest(
                     launch {
                         SetUserConfigurationChannel.proxyGenericInfoChannel.send(
                             ProxyGenericInfo("Port $port -> ${NetworkIssueErrorResponses.UNAVAILABLE_PORT.message} or ${NetworkIssueErrorResponses.INVALID_URL.message}")
+                        )
+                    }
+                    launch {
+                        SetUserConfigurationChannel.responseTimeChannel.send(
+                            TimerResponse(timerModule(0))
                         )
                     }
                 }
@@ -129,4 +144,11 @@ private suspend fun processIncomingRequestFromSocket(socket: Socket): String {
         requestBuilder.toString() + (if (requestBody.isNotEmpty()) "\r\n\r\n" else "\n\n") + requestBody
 
     return incomingHttpRequest
+}
+
+private suspend fun timerModule(time: Long): Long{
+    if(time == 0L){
+        return 0L
+    }
+    return time
 }

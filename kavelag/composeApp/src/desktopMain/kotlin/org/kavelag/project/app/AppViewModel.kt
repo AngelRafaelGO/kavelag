@@ -38,6 +38,7 @@ class AppViewModel {
     var showPopUpPref by mutableStateOf(false)
     val requests = mutableStateListOf<String>()
     val responses = mutableStateListOf<ResponseItem>()
+    val timeResponse = mutableStateListOf<Long>()
     private val preferences: Preferences = Preferences.userRoot().node("org.kavelag.project")
     private val json = Json { prettyPrint = true }
 
@@ -88,6 +89,12 @@ class AppViewModel {
     private suspend fun listenForProxyGenericInfo() {
         for (response in SetUserConfigurationChannel.proxyGenericInfoChannel) {
             responses.add(ResponseItem(response.proxyGenericInfo, 0xFF4B0082))
+        }
+    }
+
+    private suspend fun listenForTimeResponse() {
+        for (response in SetUserConfigurationChannel.responseTimeChannel) {
+            timeResponse.add(response.timerResponse)
         }
     }
 
@@ -176,6 +183,7 @@ class AppViewModel {
             runBlocking { stopServer() }
         }
         kavelagScope.launch { listenForResponses() }
+        kavelagScope.launch { listenForTimeResponse() }
         kavelagScope.launch { listenForProxyGenericInfo() }
     }
 
