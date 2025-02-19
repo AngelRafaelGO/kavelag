@@ -1,17 +1,17 @@
-package org.kavelag.project
+package org.kavelag.project.assets
 
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
 
-private var question_mark: ImageVector? = null
-val Question_mark: ImageVector
+private var questionMark: ImageVector? = null
+val questionMarkSVG: ImageVector
     get() {
-        if (question_mark != null) {
-            return question_mark!!
+        if (questionMark != null) {
+            return questionMark!!
         }
-        question_mark = ImageVector.Builder(
+        questionMark = ImageVector.Builder(
             name = "org.kavelag.project.getQuestion_mark",
             defaultWidth = 24.dp,
             defaultHeight = 24.dp,
@@ -59,5 +59,5 @@ val Question_mark: ImageVector
                 reflectiveQuadTo(480f, 880f)
             }
         }.build()
-        return question_mark!!
+        return questionMark!!
     }

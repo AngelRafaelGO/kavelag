@@ -1,4 +1,4 @@
-package org.kavelag.project
+package org.kavelag.project.app
 
 import androidx.compose.runtime.*
 import kotlinx.coroutines.*
@@ -6,9 +6,12 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import org.kavelag.project.SetUserConfigurationChannel
 import org.kavelag.project.models.AppliedNetworkAction
 import org.kavelag.project.models.ProxySocketConfiguration
 import org.kavelag.project.models.ResponseItem
+import org.kavelag.project.startServer
+import org.kavelag.project.stopServer
 import java.util.prefs.Preferences
 
 @Serializable
@@ -175,7 +178,6 @@ class AppViewModel {
         kavelagScope.launch { listenForResponses() }
         kavelagScope.launch { listenForProxyGenericInfo() }
     }
-
 
 
     fun savePreferenceSettings(url: String, ports: List<String>) {

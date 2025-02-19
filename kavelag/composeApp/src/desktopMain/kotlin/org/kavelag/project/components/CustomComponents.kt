@@ -1,4 +1,4 @@
-package org.kavelag.project
+package org.kavelag.project.components
 
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
@@ -29,6 +29,8 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import org.kavelag.project.app.AppViewModel
+import org.kavelag.project.app.PreferenceSettings
 
 @Composable
 fun functionBox(
@@ -111,7 +113,6 @@ fun functionBox(
                             modifier = Modifier.padding(end = 5.dp)
                                 .width(55.dp),
                         )
-
                         customTextField(
                             value = value,
                             placeholderText = "",
@@ -131,20 +132,18 @@ fun functionBox(
                             modifier = Modifier.padding(start = 5.dp, end = 5.dp)
                         )
                     }
-
                     Row(
                         modifier = Modifier.weight(0.5f),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Response",
+                            text = "Read",
                             fontSize = 12.sp,
                             textAlign = TextAlign.Center,
                             modifier = Modifier
                                 .padding(end = 5.dp)
                                 .width(55.dp),
                         )
-
                         customTextField(
                             value = secondValue,
                             placeholderText = "",
@@ -173,7 +172,6 @@ fun functionBox(
                         modifier = Modifier
                             .height(22.dp),
                     )
-
                     Text(
                         text = if (valueBool) "Enabled" else "Disabled",
                         fontSize = 12.sp,
@@ -222,10 +220,8 @@ fun customTextField(
                 modifier = Modifier
                     .padding(start = 5.dp),
                 verticalAlignment = Alignment.CenterVertically
-
             ) {
                 if (leadingIcon != null) leadingIcon()
-
                 Box(Modifier.weight(1f)) {
                     if (value.isEmpty()) {
                         Text(
@@ -251,7 +247,6 @@ fun verticalScrollbar(
 ) {
     val barHeight = 10.dp
     val barPosition = (scrollState.value.toFloat() / scrollState.maxValue.toFloat()).coerceIn(0f, 1f)
-
     Box(
         modifier = modifier
             .width(6.dp)
@@ -267,7 +262,6 @@ fun verticalScrollbar(
             }
     )
 }
-
 
 @Composable
 fun popUpHelp(onDismiss: () -> Unit) {
@@ -312,7 +306,6 @@ fun popUpHelp(onDismiss: () -> Unit) {
 fun popUpPref(viewModel: AppViewModel, onDismiss: () -> Unit) {
     val selectedItems = remember { mutableStateListOf<PreferenceSettings>() }
     var allSettings by remember { mutableStateOf(viewModel.getAllPreferenceSettings()) }
-
     Dialog(onDismissRequest = onDismiss) {
         Card(
             modifier = Modifier
@@ -330,7 +323,6 @@ fun popUpPref(viewModel: AppViewModel, onDismiss: () -> Unit) {
                     fontSize = 18.sp,
                     modifier = Modifier.padding(bottom = 2.dp)
                 )
-
                 Box(modifier = Modifier.weight(1f)) {
                     LazyColumn(modifier = Modifier.fillMaxWidth()) {
                         items(allSettings) { setting ->
@@ -355,9 +347,9 @@ fun popUpPref(viewModel: AppViewModel, onDismiss: () -> Unit) {
                                 )
                                 Text(
                                     text = """
-            URL: ${setting.url}
-            Ports: ${setting.ports.joinToString(", ")}
-        """.trimIndent(),
+                                            URL: ${setting.url}
+                                            Ports: ${setting.ports.joinToString(", ")}
+                                            """.trimIndent(),
                                     fontSize = 16.sp,
                                     modifier = Modifier.padding(start = 8.dp)
                                 )
@@ -367,7 +359,6 @@ fun popUpPref(viewModel: AppViewModel, onDismiss: () -> Unit) {
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
-
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -385,7 +376,6 @@ fun popUpPref(viewModel: AppViewModel, onDismiss: () -> Unit) {
                     ) {
                         Text("Delete")
                     }
-
                     Button(
                         onClick = {
                             if (selectedItems.isNotEmpty()) {

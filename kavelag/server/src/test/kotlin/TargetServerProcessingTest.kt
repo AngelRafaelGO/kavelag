@@ -1,34 +1,46 @@
-import junit.framework.TestCase.assertTrue
-import kotlinx.coroutines.runBlocking
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.mockkStatic
+import io.mockk.unmockkStatic
+import kotlinx.coroutines.test.runTest
 import org.kavelag.project.models.HttpRequest
 import org.kavelag.project.targetServerProcessing.callTargetServer
+import org.kavelag.project.targetServerProcessing.getMethod
 import org.kavelag.project.targetServerProcessing.isValidUrl
 import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class TargetServerProcessingTest {
     @Test
-    fun shouldReturnTrueIfValidURL() {
+    fun shouldValidateUrls() {
         // ACT & ASSERT
-        assertTrue(isValidUrl("http://mysiteurl.com"))
+        assertTrue(isValidUrl("http://kavelag.com"))
     }
 
     @Test
-    fun shouldCallTargetServerGetMethod() = runBlocking {
+    fun shouldCallTargetServerWithGETRequest() = runTest {
         // ARRANGE
-        val headers: MutableMap<String, String> = mutableMapOf("test" to "header1", "test2" to "header2")
-        val url = "http://localhost"
-        val port = 8080
-        val request = HttpRequest(
+        val expectedTargetServerResponse =
+            "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\"message\":\"Success\"}"
+        val mockHttpRequest = HttpRequest(
             method = "GET",
-            requestedResource = "/test",
-            httpProtocolVersion = "1.1",
-            headers = headers
+            requestedResource = "/api/data",
+            httpProtocolVersion = "HTTP/1.1",
+            headers = mutableMapOf("Content-Type" to "application/json"),
+            body = null
         )
-        // ACT
-        val actual = callTargetServer(url, port, request)
-        println(actual)
-        // ASSERT
-        //val expectedResponse = "HTTP/1.1 200 OK\r\n\r\n"
-        //assertEquals(expectedResponse, actual)
+
+        mockkStatic(::getMethod)
+        coEvery { getMethod("http://test.com", 8080, mockHttpRequest) } returns expectedTargetServerResponse
+
+        // Act
+        val result = callTargetServer("http://test.com", 8080, mockHttpRequest)
+
+        // Assert
+        assertEquals(expectedTargetServerResponse, result)
+        coVerify(exactly = 1) { getMethod("http://test.com", 8080, mockHttpRequest) }
+
+        unmockkStatic(::getMethod)
     }
 }
