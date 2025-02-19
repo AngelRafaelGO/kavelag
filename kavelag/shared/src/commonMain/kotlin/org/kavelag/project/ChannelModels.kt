@@ -11,3 +11,6 @@ data class HttpDestinationServerResponse(val httpDestinationServerResponse: Stri
 
 @Serializable
 data class ProxyGenericInfo(val proxyGenericInfo: String)
+
+@Serializable
+data class TimerResponse(val timerResponse: Long)

@@ -4,10 +4,7 @@ import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import org.kavelag.project.HttpDestinationServerResponse
-import org.kavelag.project.HttpIncomingData
-import org.kavelag.project.ProxyGenericInfo
-import org.kavelag.project.SetUserConfigurationChannel
+import org.kavelag.project.*
 import org.kavelag.project.models.NetworkIssueErrorResponses
 import org.kavelag.project.models.ProxySocketConfiguration
 import org.kavelag.project.network.networkIssueSelectorOnConnect
@@ -16,6 +13,7 @@ import org.kavelag.project.parser.parseIncomingHttpRequest
 import org.kavelag.project.targetServerProcessing.callTargetServer
 import org.kavelag.project.targetServerProcessing.isPortOpen
 import org.kavelag.project.targetServerProcessing.isValidUrl
+import kotlin.system.measureTimeMillis
 
 suspend fun handleIncomingRequest(
     proxySocketConfiguration: ProxySocketConfiguration,
@@ -41,32 +39,40 @@ suspend fun handleIncomingRequest(
                         networkIssueSelectorOnConnect(proxySocketConfiguration.appliedNetworkAction)
 
                     if (isNetworkIssueApplied) {
-                        val targetServerResponse = callTargetServer(
-                            proxySocketConfiguration.url,
-                            port,
-                            parsedRequest
-                        )
+                        var responseTime = measureTimeMillis {
+                            val targetServerResponse = callTargetServer(
+                                proxySocketConfiguration.url,
+                                port,
+                                parsedRequest
+                            )
 
-                        networkIssueSelectorOnRead(proxySocketConfiguration.appliedNetworkAction)
+                            networkIssueSelectorOnRead(proxySocketConfiguration.appliedNetworkAction)
 
-                        if (targetServerResponse != null) {
-                            launch {
-                                SetUserConfigurationChannel.destinationServerResponseDataChannel.send(
-                                    HttpDestinationServerResponse(
-                                        "Port $port -> $targetServerResponse"
+                            if (targetServerResponse != null) {
+                                launch {
+                                    SetUserConfigurationChannel.destinationServerResponseDataChannel.send(
+                                        HttpDestinationServerResponse(
+                                            "Port $port -> $targetServerResponse"
+                                        )
                                     )
-                                )
-                            }
+                                }
 
-                            outputChannel.writeStringUtf8(targetServerResponse)
-                            outputChannel.flush()
-                        } else {
-                            launch {
-                                SetUserConfigurationChannel.proxyGenericInfoChannel.send(
-                                    ProxyGenericInfo("Port $port -> ${NetworkIssueErrorResponses.DESTINATION_SERVER_DID_NOT_RESPOND.message}")
-                                )
+                                outputChannel.writeStringUtf8(targetServerResponse)
+                                outputChannel.flush()
+                            } else {
+                                launch {
+                                    SetUserConfigurationChannel.proxyGenericInfoChannel.send(
+                                        ProxyGenericInfo("Port $port -> ${NetworkIssueErrorResponses.DESTINATION_SERVER_DID_NOT_RESPOND.message}")
+                                    )
+                                }
                             }
                         }
+                        launch {
+                            SetUserConfigurationChannel.responseTimeChannel.send(
+                                TimerResponse(responseTime)
+                                )
+                        }
+                        println("------------------------------------$responseTime----------------------------")
                     } else {
                         launch {
                             SetUserConfigurationChannel.proxyGenericInfoChannel.send(
@@ -74,6 +80,8 @@ suspend fun handleIncomingRequest(
                             )
                         }
                     }
+
+
                 } else {
                     launch {
                         SetUserConfigurationChannel.proxyGenericInfoChannel.send(
@@ -82,6 +90,7 @@ suspend fun handleIncomingRequest(
                     }
                 }
             }
+
         } catch (e: Throwable) {
             println("Error handling socket: $e")
         } finally {
