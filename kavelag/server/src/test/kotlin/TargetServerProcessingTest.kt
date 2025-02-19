@@ -36,10 +36,10 @@ class TargetServerProcessingTest {
         coEvery { getMethod("http://test.com", 8080, mockHttpRequest) } returns expectedTargetServerResponse
 
         // Act
-        val result = callTargetServer("http://test.com", 8080, mockHttpRequest)
+        val actual = callTargetServer("http://test.com", 8080, mockHttpRequest)
 
         // Assert
-        assertEquals(expectedTargetServerResponse, result)
+        assertEquals(expectedTargetServerResponse, actual)
         coVerify(exactly = 1) { getMethod("http://test.com", 8080, mockHttpRequest) }
 
         unmockkStatic(::getMethod)
@@ -81,9 +81,10 @@ class TargetServerProcessingTest {
         coEvery { postMethod("http://test.com", 8080, mockHttpRequest) } returns expectedTargetServerResponse
 
         // Act
-        val result = callTargetServer("http://test.com", 8080, mockHttpRequest)
+        val actual = callTargetServer("http://test.com", 8080, mockHttpRequest)
+        
         // Assert
-        assertEquals(expectedTargetServerResponse, result)
+        assertEquals(expectedTargetServerResponse, actual)
         coVerify(exactly = 1) { postMethod("http://test.com", 8080, mockHttpRequest) }
 
         unmockkStatic(::postMethod)
