@@ -8,6 +8,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import org.jetbrains.compose.resources.painterResource
+import org.kavelag.project.app.App
 
 fun main() = application {
     val kavelagScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)

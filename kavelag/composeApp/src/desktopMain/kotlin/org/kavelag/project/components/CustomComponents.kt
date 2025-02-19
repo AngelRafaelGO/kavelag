@@ -1,4 +1,4 @@
-package org.kavelag.project
+package org.kavelag.project.components
 
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
@@ -29,6 +29,8 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import org.kavelag.project.app.AppViewModel
+import org.kavelag.project.app.PreferenceSettings
 
 @Composable
 fun functionBox(

@@ -1,4 +1,4 @@
-package org.kavelag.project
+package org.kavelag.project.app
 
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.*
@@ -22,6 +22,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
+import org.kavelag.project.assets.questionMarkSVG
+import org.kavelag.project.components.*
 import org.kavelag.project.models.ResponseItem
 
 @Composable
@@ -45,7 +47,7 @@ fun App(kavelagScope: CoroutineScope) {
             viewModel.showPortLengthError = false
         }
     }
-    
+
     if (viewModel.showSendError) {
         LaunchedEffect(Unit) {
             delay(3000)
@@ -90,7 +92,7 @@ fun App(kavelagScope: CoroutineScope) {
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Question_mark,
+                        imageVector = questionMarkSVG,
                         contentDescription = "Question Mark Icon",
                         tint = Color.White
                     )
