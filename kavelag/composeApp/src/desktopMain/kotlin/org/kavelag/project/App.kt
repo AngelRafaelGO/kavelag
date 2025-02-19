@@ -45,6 +45,7 @@ fun App(kavelagScope: CoroutineScope) {
             viewModel.showPortLengthError = false
         }
     }
+    
     if (viewModel.showSendError) {
         LaunchedEffect(Unit) {
             delay(3000)
@@ -450,7 +451,7 @@ fun App(kavelagScope: CoroutineScope) {
                     }
                     if (viewModel.showPortLengthError) {
                         Text(
-                            text = "La limite de ports est de 3",
+                            text = "Port number limit has been reached",
                             color = Color.Red,
                             fontSize = 12.sp,
                             fontStyle = FontStyle.Italic,
