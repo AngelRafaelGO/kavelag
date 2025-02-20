@@ -8,6 +8,7 @@ import org.kavelag.project.HttpDestinationServerResponse
 import org.kavelag.project.HttpIncomingData
 import org.kavelag.project.ProxyGenericInfo
 import org.kavelag.project.SetUserConfigurationChannel
+import org.kavelag.project.Timer
 import org.kavelag.project.models.NetworkIssueErrorResponses
 import org.kavelag.project.models.ProxySocketConfiguration
 import org.kavelag.project.network.networkIssueSelectorOnConnect
@@ -56,8 +57,13 @@ suspend fun handleIncomingRequest(
                             launch {
                                 SetUserConfigurationChannel.destinationServerResponseDataChannel.send(
                                     HttpDestinationServerResponse(
-                                        "Port $port -> $targetServerResponse (Time: ${timer} ms)"
+                                        "Port $port -> $targetServerResponse"
                                     )
+                                )
+                            }
+                            launch{
+                                SetUserConfigurationChannel.timer.send(
+                                    Timer("Request time: ${timer} ms")
                                 )
                             }
 

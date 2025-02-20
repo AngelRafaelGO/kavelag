@@ -91,6 +91,12 @@ class AppViewModel {
         }
     }
 
+    private suspend fun listenForTimer() {
+        for (response in SetUserConfigurationChannel.timer) {
+            responses.add(ResponseItem(response.timer, null))
+        }
+    }
+
     fun deletePortSlot() {
         if (!isProxyRunning) {
             number--;
@@ -177,6 +183,7 @@ class AppViewModel {
         }
         kavelagScope.launch { listenForResponses() }
         kavelagScope.launch { listenForProxyGenericInfo() }
+        kavelagScope.launch { listenForTimer()}
     }
 
 
