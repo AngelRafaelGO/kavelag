@@ -122,6 +122,7 @@ class AppViewModel {
     fun clearResponse() {
         if (responses.isNotEmpty()) {
             responses.clear()
+            times.clear()
         }
     }
 

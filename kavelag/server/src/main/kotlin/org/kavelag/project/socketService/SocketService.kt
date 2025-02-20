@@ -60,10 +60,8 @@ suspend fun handleIncomingRequest(
                                         "Port $port -> $targetServerResponse"
                                     )
                                 )
-                            }
-                            launch{
                                 SetUserConfigurationChannel.timer.send(
-                                    Timer("Request time: ${timer} ms")
+                                    Timer("Request time: ${timer}")
                                 )
                             }
 
@@ -74,6 +72,9 @@ suspend fun handleIncomingRequest(
                                 SetUserConfigurationChannel.proxyGenericInfoChannel.send(
                                     ProxyGenericInfo("Port $port -> ${NetworkIssueErrorResponses.DESTINATION_SERVER_DID_NOT_RESPOND.message}")
                                 )
+                                SetUserConfigurationChannel.timer.send(
+                                    Timer("Request time: 0")
+                                )
                             }
                         }
                     } else {
@@ -81,12 +82,18 @@ suspend fun handleIncomingRequest(
                             SetUserConfigurationChannel.proxyGenericInfoChannel.send(
                                 ProxyGenericInfo("Port $port -> ${NetworkIssueErrorResponses.UNREACHABLE_DESTINATION_SERVER.message}")
                             )
+                            SetUserConfigurationChannel.timer.send(
+                                Timer("Request time: 0")
+                            )
                         }
                     }
                 } else {
                     launch {
                         SetUserConfigurationChannel.proxyGenericInfoChannel.send(
                             ProxyGenericInfo("Port $port -> ${NetworkIssueErrorResponses.UNAVAILABLE_PORT.message} or ${NetworkIssueErrorResponses.INVALID_URL.message}")
+                        )
+                        SetUserConfigurationChannel.timer.send(
+                            Timer("Request time: 0")
                         )
                     }
                 }
