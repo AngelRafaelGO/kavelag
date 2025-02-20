@@ -38,6 +38,7 @@ class AppViewModel {
     var showPopUpPref by mutableStateOf(false)
     val requests = mutableStateListOf<String>()
     val responses = mutableStateListOf<ResponseItem>()
+    val times = mutableStateListOf<ResponseItem>()
     private val preferences: Preferences = Preferences.userRoot().node("org.kavelag.project")
     private val json = Json { prettyPrint = true }
 
@@ -93,7 +94,7 @@ class AppViewModel {
 
     private suspend fun listenForTimer() {
         for (response in SetUserConfigurationChannel.timer) {
-            responses.add(ResponseItem(response.timer, null))
+            times.add(ResponseItem(response.timer, 0xFF00FF00))
         }
     }
 
