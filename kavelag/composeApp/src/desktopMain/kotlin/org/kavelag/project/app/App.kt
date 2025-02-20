@@ -240,7 +240,7 @@ fun App(kavelagScope: CoroutineScope) {
                                         .weight(1f)
                                         .verticalScroll(scrollStateResponses)
                                 ) {
-                                    viewModel.responses.forEach { responseItem: ResponseItem ->
+                                    viewModel.responses.forEachIndexed { i, responseItem: ResponseItem ->
                                         Text(
                                             text = responseItem.textValue,
                                             color = Color(responseItem.colorValue ?: 0xFFA9A9A9),
@@ -250,6 +250,16 @@ fun App(kavelagScope: CoroutineScope) {
                                             modifier = Modifier
                                                 .padding(start = 10.dp, end = 10.dp),
                                         )
+                                        Text(
+                                            text = viewModel.times[i].textValue,
+                                            color = Color(viewModel.times[i].colorValue ?: 0xFFA9A9A9),
+                                            fontSize = 10.sp,
+                                            fontStyle = FontStyle.Italic,
+                                            lineHeight = 12.sp,
+                                            modifier = Modifier
+                                                .padding(start = 10.dp, end = 10.dp),
+                                        )
+                                        Spacer(modifier = Modifier.height(10.dp))
                                     }
                                 }
                                 verticalScrollbar(

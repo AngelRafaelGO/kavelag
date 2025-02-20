@@ -8,6 +8,7 @@ import org.kavelag.project.HttpDestinationServerResponse
 import org.kavelag.project.HttpIncomingData
 import org.kavelag.project.ProxyGenericInfo
 import org.kavelag.project.SetUserConfigurationChannel
+import org.kavelag.project.Timer
 import org.kavelag.project.models.NetworkIssueErrorResponses
 import org.kavelag.project.models.ProxySocketConfiguration
 import org.kavelag.project.network.networkIssueSelectorOnConnect
@@ -16,6 +17,7 @@ import org.kavelag.project.parser.parseIncomingHttpRequest
 import org.kavelag.project.targetServerProcessing.callTargetServer
 import org.kavelag.project.targetServerProcessing.isPortOpen
 import org.kavelag.project.targetServerProcessing.isValidUrl
+import kotlin.time.measureTime
 
 suspend fun handleIncomingRequest(
     proxySocketConfiguration: ProxySocketConfiguration,
@@ -41,13 +43,15 @@ suspend fun handleIncomingRequest(
                         networkIssueSelectorOnConnect(proxySocketConfiguration.appliedNetworkAction)
 
                     if (isNetworkIssueApplied) {
-                        val targetServerResponse = callTargetServer(
-                            proxySocketConfiguration.url,
-                            port,
-                            parsedRequest
-                        )
-
-                        networkIssueSelectorOnRead(proxySocketConfiguration.appliedNetworkAction)
+                        val targetServerResponse: String?
+                        val timer = measureTime {
+                            targetServerResponse = callTargetServer(
+                                proxySocketConfiguration.url,
+                                port,
+                                parsedRequest
+                            )
+                            networkIssueSelectorOnRead(proxySocketConfiguration.appliedNetworkAction)
+                        }.toString()
 
                         if (targetServerResponse != null) {
                             launch {
@@ -55,6 +59,9 @@ suspend fun handleIncomingRequest(
                                     HttpDestinationServerResponse(
                                         "Port $port -> $targetServerResponse"
                                     )
+                                )
+                                SetUserConfigurationChannel.timer.send(
+                                    Timer("Request time: ${timer}")
                                 )
                             }
 
@@ -65,6 +72,9 @@ suspend fun handleIncomingRequest(
                                 SetUserConfigurationChannel.proxyGenericInfoChannel.send(
                                     ProxyGenericInfo("Port $port -> ${NetworkIssueErrorResponses.DESTINATION_SERVER_DID_NOT_RESPOND.message}")
                                 )
+                                SetUserConfigurationChannel.timer.send(
+                                    Timer("Request time: 0")
+                                )
                             }
                         }
                     } else {
@@ -72,12 +82,18 @@ suspend fun handleIncomingRequest(
                             SetUserConfigurationChannel.proxyGenericInfoChannel.send(
                                 ProxyGenericInfo("Port $port -> ${NetworkIssueErrorResponses.UNREACHABLE_DESTINATION_SERVER.message}")
                             )
+                            SetUserConfigurationChannel.timer.send(
+                                Timer("Request time: 0")
+                            )
                         }
                     }
                 } else {
                     launch {
                         SetUserConfigurationChannel.proxyGenericInfoChannel.send(
                             ProxyGenericInfo("Port $port -> ${NetworkIssueErrorResponses.UNAVAILABLE_PORT.message} or ${NetworkIssueErrorResponses.INVALID_URL.message}")
+                        )
+                        SetUserConfigurationChannel.timer.send(
+                            Timer("Request time: 0")
                         )
                     }
                 }
