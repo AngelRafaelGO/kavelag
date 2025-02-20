@@ -186,6 +186,10 @@ class AppViewModel {
         val currentListJson = preferences.get("preferenceSettingsList", "[]")
         val currentList = json.decodeFromString<List<PreferenceSettings>>(currentListJson).toMutableList()
 
+        if (currentList.any { it.url == url && it.ports == ports }) {
+            return
+        }
+
         currentList.add(preferenceSettings)
 
         val updatedListJson = json.encodeToString(currentList)
