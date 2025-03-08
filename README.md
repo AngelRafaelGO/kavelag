@@ -14,4 +14,8 @@ The core Kavelag is open-source and is currently available as a desktop applicat
 
 </br>
 <h2>Installation</h2>
-Download the installer directly from Github Releases, you can also checkout our website here ➡️ https://kavelag.com
+Download the installer directly from Github Releases.
+
+</br>
+<h2>About</h2>
+🌐 You can checkout our website here ➡️ https://kavelag.com/
