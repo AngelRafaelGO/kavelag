@@ -278,7 +278,7 @@ fun popUpHelp(onDismiss: () -> Unit) {
                     .fillMaxWidth()
             ) {
                 Text(
-                    text = "User Manual for Kavelag:",
+                    text = "User Manual:",
                     fontSize = 18.sp,
                     fontStyle = FontStyle.Italic,
                     modifier = Modifier.padding(bottom = 2.dp)

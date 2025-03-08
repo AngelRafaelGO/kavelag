@@ -4,11 +4,7 @@ import io.ktor.network.sockets.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import org.kavelag.project.HttpDestinationServerResponse
-import org.kavelag.project.HttpIncomingData
-import org.kavelag.project.ProxyGenericInfo
-import org.kavelag.project.SetUserConfigurationChannel
-import org.kavelag.project.Timer
+import org.kavelag.project.*
 import org.kavelag.project.models.NetworkIssueErrorResponses
 import org.kavelag.project.models.ProxySocketConfiguration
 import org.kavelag.project.network.networkIssueSelectorOnConnect
@@ -26,7 +22,7 @@ suspend fun handleIncomingRequest(
     coroutineScope {
         try {
             val outputChannel = socket.openWriteChannel(autoFlush = true)
-            val incomingHttpRequest = processIncomingRequestFromSocket(socket)
+            val incomingHttpRequest = processIncomingHttpRequest(socket)
 
             proxySocketConfiguration.port.forEach { port ->
                 if (isPortOpen(proxySocketConfiguration.url, port) && isValidUrl(proxySocketConfiguration.url)) {
@@ -61,7 +57,7 @@ suspend fun handleIncomingRequest(
                                     )
                                 )
                                 SetUserConfigurationChannel.timer.send(
-                                    Timer("Request time: ${timer}")
+                                    Timer("Request time: $timer")
                                 )
                             }
 
@@ -70,7 +66,10 @@ suspend fun handleIncomingRequest(
                         } else {
                             launch {
                                 SetUserConfigurationChannel.proxyGenericInfoChannel.send(
-                                    ProxyGenericInfo("Port $port -> ${NetworkIssueErrorResponses.DESTINATION_SERVER_DID_NOT_RESPOND.message}")
+                                    ProxyGenericInfo(
+                                        "Port $port -> " +
+                                                NetworkIssueErrorResponses.DESTINATION_SERVER_DID_NOT_RESPOND.message
+                                    )
                                 )
                                 SetUserConfigurationChannel.timer.send(
                                     Timer("Request time: 0")
@@ -80,7 +79,10 @@ suspend fun handleIncomingRequest(
                     } else {
                         launch {
                             SetUserConfigurationChannel.proxyGenericInfoChannel.send(
-                                ProxyGenericInfo("Port $port -> ${NetworkIssueErrorResponses.UNREACHABLE_DESTINATION_SERVER.message}")
+                                ProxyGenericInfo(
+                                    "Port $port -> " +
+                                            NetworkIssueErrorResponses.UNREACHABLE_DESTINATION_SERVER.message
+                                )
                             )
                             SetUserConfigurationChannel.timer.send(
                                 Timer("Request time: 0")
@@ -90,7 +92,10 @@ suspend fun handleIncomingRequest(
                 } else {
                     launch {
                         SetUserConfigurationChannel.proxyGenericInfoChannel.send(
-                            ProxyGenericInfo("Port $port -> ${NetworkIssueErrorResponses.UNAVAILABLE_PORT.message} or ${NetworkIssueErrorResponses.INVALID_URL.message}")
+                            ProxyGenericInfo(
+                                "Port $port -> ${NetworkIssueErrorResponses.UNAVAILABLE_PORT.message} " +
+                                        "or ${NetworkIssueErrorResponses.INVALID_URL.message}"
+                            )
                         )
                         SetUserConfigurationChannel.timer.send(
                             Timer("Request time: 0")
@@ -110,7 +115,7 @@ suspend fun handleIncomingRequest(
     }
 }
 
-private suspend fun processIncomingRequestFromSocket(socket: Socket): String {
+private suspend fun processIncomingHttpRequest(socket: Socket): String {
     val inputChannel = socket.openReadChannel()
     val requestBuilder = StringBuilder()
     var line: String?

@@ -10,6 +10,7 @@ suspend fun networkIssueSelectorOnConnect(actionToApply: AppliedNetworkAction): 
         "latency" -> networkLatency(actionToApply.readParam!!.toLong())
         "randomrequestfailure" -> return Random.nextBoolean()
         "nonetwork" -> return false
+        "requestFailurePercent" -> return Random.nextDouble() < actionToApply.percentParam!!
     }
     return true
 }
