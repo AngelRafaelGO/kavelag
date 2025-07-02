@@ -5,6 +5,7 @@ import io.ktor.utils.io.*
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import org.kavelag.project.*
+import org.kavelag.project.models.HttpRequest
 import org.kavelag.project.models.NetworkIssueErrorResponses
 import org.kavelag.project.models.ProxySocketConfiguration
 import org.kavelag.project.network.networkIssueSelectorOnConnect
@@ -67,7 +68,7 @@ suspend fun handleIncomingRequest(
                             launch {
                                 SetUserConfigurationChannel.proxyGenericInfoChannel.send(
                                     ProxyGenericInfo(
-                                        "Port $port -> " +
+                                          "Port $port -> " +
                                                 NetworkIssueErrorResponses.DESTINATION_SERVER_DID_NOT_RESPOND.message
                                     )
                                 )
@@ -142,3 +143,5 @@ private suspend fun processIncomingHttpRequest(socket: Socket): String {
 
     return incomingHttpRequest
 }
+
+
