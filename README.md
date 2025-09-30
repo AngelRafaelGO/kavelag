@@ -3,7 +3,7 @@
 </p>
 </br>
 <h2 align='center'>Welcome to Kavelag ! 🦇</h2>
-<h3 align='center'>v0.0.1</h3>
+<h3 align='center'>v1.0.0</h3>
 </br>
 
 Kavelag is a desktop application that lets you simulate common network problems in order to test your application's behavior under stressful conditions.
